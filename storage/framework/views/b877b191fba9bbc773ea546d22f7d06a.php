@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ru" class="h-full">
+<head>
+    <?php echo $__env->make('partials.head', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+    <style>
+        /* Tappsk-style design */
+        :root {
+            --sidebar-bg: #1a1a2e;
+            --sidebar-text: #a0a0b8;
+            --sidebar-active: #ffffff;
+            --sidebar-hover: #2a2a45;
+            --accent: #7c6ff7;
+            --accent-light: #ede9ff;
+            --accent-text: #5b52d4;
+            --high: #ff5c5c;
+            --high-bg: #fff0f0;
+            --medium: #f4a223;
+            --medium-bg: #fff8ec;
+            --low: #38c97b;
+            --low-bg: #edfbf3;
+            --overdue-color: #ff5c5c;
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif; background: #f5f5fa; }
+        .sidebar {
+            width: 240px; min-height: 100vh; background: var(--sidebar-bg);
+            display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 50;
+        }
+        .sidebar-logo {
+            padding: 24px 20px 20px; font-size: 20px; font-weight: 700;
+            color: #fff; letter-spacing: -0.5px;
+        }
+        .sidebar-logo span { color: var(--accent); }
+        .sidebar-section { padding: 6px 12px; font-size: 10px; font-weight: 600;
+            letter-spacing: 1px; text-transform: uppercase; color: #4a4a6a; margin-top: 8px; }
+        .sidebar-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 16px; margin: 1px 8px; border-radius: 10px;
+            color: var(--sidebar-text); text-decoration: none; font-size: 14px;
+            transition: all 0.15s;
+        }
+        .sidebar-item:hover { background: var(--sidebar-hover); color: #fff; }
+        .sidebar-item.active { background: var(--accent); color: #fff; }
+        .sidebar-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+        .sidebar-avatar {
+            margin: auto 16px 20px; padding: 12px 16px; border-radius: 12px;
+            background: #252545; display: flex; align-items: center; gap: 10px;
+        }
+        .sidebar-avatar-circle {
+            width: 34px; height: 34px; border-radius: 50%; background: var(--accent);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 600; color: #fff; flex-shrink: 0;
+        }
+        .sidebar-avatar-name { font-size: 13px; font-weight: 500; color: #fff; line-height: 1.3; }
+        .sidebar-avatar-role { font-size: 11px; color: var(--sidebar-text); }
+        .main { margin-left: 240px; min-height: 100vh; padding: 32px 40px; }
+        .page-title { font-size: 26px; font-weight: 700; color: #1a1a2e; margin-bottom: 6px; }
+        .page-subtitle { font-size: 14px; color: #888; margin-bottom: 32px; }
+
+        /* Task list */
+        .task-section { margin-bottom: 32px; }
+        .task-section-label {
+            font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+            color: #aaa; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+        }
+        .task-section-label.overdue { color: var(--overdue-color); }
+        .task-section-count {
+            background: #f0f0f5; border-radius: 20px; padding: 1px 8px;
+            font-size: 11px; color: #888; font-weight: 600;
+        }
+        .task-section-label.overdue .task-section-count { background: #fff0f0; color: var(--overdue-color); }
+        .task-card {
+            background: #fff; border-radius: 14px; margin-bottom: 8px;
+            display: flex; align-items: center; gap: 14px; padding: 14px 18px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: box-shadow 0.15s;
+        }
+        .task-card:hover { box-shadow: 0 3px 10px rgba(0,0,0,0.08); }
+        .task-checkbox {
+            width: 22px; height: 22px; border-radius: 50%; border: 2px solid #ddd;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; flex-shrink: 0; transition: all 0.2s;
+        }
+        .task-checkbox:hover { border-color: var(--accent); }
+        .task-checkbox.checked { background: var(--accent); border-color: var(--accent); }
+        .task-checkbox svg { width: 12px; height: 12px; color: #fff; display: none; }
+        .task-checkbox.checked svg { display: block; }
+        .task-title { flex: 1; font-size: 14px; color: #1a1a2e; font-weight: 500; line-height: 1.4; }
+        .task-title.done { text-decoration: line-through; color: #bbb; }
+        .task-badges { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+        .badge {
+            font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; white-space: nowrap;
+        }
+        .badge-high { background: var(--high-bg); color: var(--high); }
+        .badge-medium { background: var(--medium-bg); color: var(--medium); }
+        .badge-low { background: var(--low-bg); color: var(--low); }
+        .badge-date { background: #ede9ff; color: #5b52d4; }
+        .badge-today { background: #e8f4ff; color: #2f86d4; }
+        .badge-later { background: #f5f5f8; color: #888; }
+
+        /* Employee cards (director view) */
+        .employee-card {
+            background: #fff; border-radius: 14px; padding: 16px 20px;
+            display: flex; align-items: center; gap: 14px; margin-bottom: 10px;
+            cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: all 0.15s;
+        }
+        .employee-card:hover { box-shadow: 0 3px 12px rgba(0,0,0,0.1); transform: translateY(-1px); }
+        .emp-avatar {
+            width: 44px; height: 44px; border-radius: 12px;
+            background: var(--accent-light); color: var(--accent-text);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px; font-weight: 700; flex-shrink: 0;
+        }
+        .emp-name { font-size: 15px; font-weight: 600; color: #1a1a2e; }
+        .emp-stats { font-size: 12px; color: #888; margin-top: 2px; }
+        .emp-arrow { color: #ccc; margin-left: auto; }
+        .emp-open-count {
+            background: var(--accent-light); color: var(--accent-text);
+            font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px;
+        }
+
+        /* Add task button */
+        .fab {
+            position: fixed; bottom: 32px; right: 40px;
+            width: 52px; height: 52px; border-radius: 50%;
+            background: var(--accent); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; box-shadow: 0 4px 20px rgba(124,111,247,0.4);
+            font-size: 26px; line-height: 1; border: none;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .fab:hover { transform: scale(1.08); box-shadow: 0 6px 24px rgba(124,111,247,0.5); }
+
+        /* Modal */
+        .modal-backdrop {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+            display: flex; align-items: center; justify-content: center; z-index: 200; padding: 20px;
+        }
+        .modal {
+            background: #fff; border-radius: 20px; padding: 28px;
+            width: 100%; max-width: 440px; box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+        .modal-title { font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 20px; }
+        .form-label { font-size: 12px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block; }
+        .form-input {
+            width: 100%; padding: 11px 14px; border: 1.5px solid #eee; border-radius: 10px;
+            font-size: 14px; color: #1a1a2e; background: #fafafa;
+            outline: none; transition: border-color 0.15s;
+        }
+        .form-input:focus { border-color: var(--accent); background: #fff; }
+        .form-group { margin-bottom: 16px; }
+        .priority-pills { display: flex; gap: 8px; }
+        .priority-pill {
+            flex: 1; padding: 9px; border-radius: 10px; border: 1.5px solid #eee;
+            font-size: 13px; font-weight: 600; cursor: pointer; text-align: center;
+            transition: all 0.15s; background: #fafafa; color: #888;
+        }
+        .priority-pill.active-high { background: var(--high-bg); border-color: var(--high); color: var(--high); }
+        .priority-pill.active-medium { background: var(--medium-bg); border-color: var(--medium); color: var(--medium); }
+        .priority-pill.active-low { background: var(--low-bg); border-color: var(--low); color: var(--low); }
+        .timing-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+        .timing-pill {
+            padding: 8px 14px; border-radius: 10px; border: 1.5px solid #eee;
+            font-size: 13px; font-weight: 500; cursor: pointer; background: #fafafa; color: #888;
+            transition: all 0.15s;
+        }
+        .timing-pill.active { background: var(--accent-light); border-color: var(--accent); color: var(--accent-text); }
+        .btn-submit {
+            width: 100%; padding: 13px; border-radius: 12px; background: var(--accent);
+            color: #fff; font-size: 15px; font-weight: 700; border: none; cursor: pointer;
+            margin-top: 8px; transition: opacity 0.15s;
+        }
+        .btn-submit:hover { opacity: 0.9; }
+        .btn-cancel {
+            width: 100%; padding: 11px; border-radius: 12px; background: none;
+            color: #888; font-size: 14px; border: none; cursor: pointer; margin-top: 6px;
+        }
+
+        /* Back button */
+        .back-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            color: var(--accent-text); font-size: 14px; font-weight: 500;
+            margin-bottom: 20px; cursor: pointer; background: none; border: none; padding: 0;
+        }
+        .back-btn:hover { opacity: 0.75; }
+        .empty-state { text-align: center; padding: 48px 0; color: #bbb; font-size: 14px; }
+        .empty-state svg { width: 48px; height: 48px; margin: 0 auto 12px; display: block; }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .main { margin-left: 0; padding: 20px; }
+        }
+    </style>
+</head>
+<body class="h-full">
+
+
+<div class="sidebar">
+    <div class="sidebar-logo">Task<span>sk</span></div>
+
+    <div class="sidebar-section">Меню</div>
+
+    <a href="<?php echo e(route('dashboard')); ?>" class="sidebar-item <?php echo e(request()->routeIs('dashboard') ? 'active' : ''); ?>">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->user()->isDirector()): ?> Сотрудники <?php else: ?> Мои задачи <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+    </a>
+
+    <div style="flex: 1;"></div>
+
+    <form method="POST" action="/logout" style="margin: 0 16px 8px;">
+        <?php echo csrf_field(); ?>
+        <button type="submit" style="width:100%;padding:9px 16px;border-radius:10px;background:none;border:none;color:#4a4a6a;font-size:14px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px;">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+            Выйти
+        </button>
+    </form>
+
+    <div class="sidebar-avatar">
+        <div class="sidebar-avatar-circle"><?php echo e(auth()->user()->initials()); ?></div>
+        <div>
+            <div class="sidebar-avatar-name"><?php echo e(auth()->user()->name); ?></div>
+            <div class="sidebar-avatar-role"><?php echo e(auth()->user()->isDirector() ? 'Директор' : 'Сотрудник'); ?></div>
+        </div>
+    </div>
+</div>
+
+
+<div class="main">
+    <?php echo $__env->yieldContent('content'); ?>
+</div>
+
+<?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($modal)): ?>
+    <?php echo e($modal); ?>
+
+<?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+<?php app('livewire')->forceAssetInjection(); ?>
+<?php echo app('flux')->scripts(); ?>
+
+</body>
+</html>
+<?php /**PATH /Users/artemartemov/Herd/task-planner-new/resources/views/layouts/app.blade.php ENDPATH**/ ?>
