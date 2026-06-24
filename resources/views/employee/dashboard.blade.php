@@ -153,4 +153,98 @@ document.addEventListener('keydown', e => {
 });
 </script>
 
+{{-- Modal редактирования --}}
+<div id="edit-modal" class="modal-backdrop" style="display:none" onclick="closeEditModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-title">Редактировать задачу</div>
+        <input type="hidden" id="edit-task-id">
+
+        <div class="form-group">
+            <label class="form-label">Название</label>
+            <input type="text" id="edit-title" class="form-input">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Приоритет</label>
+            <div class="priority-pills">
+                <div class="priority-pill" data-val="high" onclick="setEditPriority('high')">🔴 Высокий</div>
+                <div class="priority-pill" data-val="medium" onclick="setEditPriority('medium')">🟡 Средний</div>
+                <div class="priority-pill" data-val="low" onclick="setEditPriority('low')">🟢 Низкий</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Срок</label>
+            <div class="timing-pills">
+                <div class="timing-pill" data-val="today" onclick="setEditTiming('today')">Сегодня</div>
+                <div class="timing-pill" data-val="later" onclick="setEditTiming('later')">Отложить</div>
+                <div class="timing-pill" data-val="date" onclick="setEditTiming('date')">Конкретная дата</div>
+            </div>
+            <div id="edit-date-field" style="display:none;margin-top:10px">
+                <input type="date" id="edit-date" class="form-input">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Комментарий</label>
+            <textarea id="edit-comment" class="form-input" rows="3" placeholder="Заметки к задаче..."></textarea>
+        </div>
+
+        <button type="button" class="btn-submit" onclick="saveEdit()">Сохранить</button>
+        <button type="button" class="btn-cancel" onclick="closeEditModal()">Отмена</button>
+    </div>
+</div>
+
+<script>
+let editPriority = 'medium';
+let editTiming = 'today';
+
+function openEditModal(id, title, priority, timing, date, comment) {
+    document.getElementById('edit-task-id').value = id;
+    document.getElementById('edit-title').value = title;
+    document.getElementById('edit-comment').value = comment;
+    document.getElementById('edit-date').value = date || '';
+    setEditPriority(priority);
+    setEditTiming(timing);
+    document.getElementById('edit-modal').style.display = 'flex';
+}
+function closeEditModal(e) {
+    if (!e || e.target === document.getElementById('edit-modal')) {
+        document.getElementById('edit-modal').style.display = 'none';
+    }
+}
+function setEditPriority(val) {
+    editPriority = val;
+    document.querySelectorAll('#edit-modal .priority-pill').forEach(p => {
+        p.className = 'priority-pill';
+        if (p.dataset.val === val) p.classList.add('active-' + val);
+    });
+}
+function setEditTiming(val) {
+    editTiming = val;
+    document.querySelectorAll('#edit-modal .timing-pill').forEach(p => {
+        p.classList.toggle('active', p.dataset.val === val);
+    });
+    document.getElementById('edit-date-field').style.display = val === 'date' ? 'block' : 'none';
+}
+async function saveEdit() {
+    const id = document.getElementById('edit-task-id').value;
+    const body = {
+        title: document.getElementById('edit-title').value.trim(),
+        priority: editPriority,
+        timing: editTiming,
+        comment: document.getElementById('edit-comment').value,
+    };
+    if (editTiming === 'date') body.due_date = document.getElementById('edit-date').value;
+
+    await fetch(`/tasks/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+        body: JSON.stringify(body)
+    });
+    closeEditModal();
+    window.location.reload();
+}
+</script>
+
 @endsection

@@ -31,13 +31,18 @@ class TaskController extends Controller
         return response()->json(['success' => true]);
     }
 
-    public function update(Request $request, Task $task)
+    ppublic function update(Request $request, Task $task)
     {
         $request->validate([
-            'status' => ['sometimes', 'in:new,done'],
+            'status'   => ['sometimes', 'in:new,done'],
+            'title'    => ['sometimes', 'string', 'max:255'],
+            'priority' => ['sometimes', 'in:low,medium,high'],
+            'timing'   => ['sometimes', 'in:today,later,date'],
+            'due_date' => ['nullable', 'date'],
+            'comment'  => ['nullable', 'string'],
         ]);
 
-        $task->update($request->only('status'));
+        $task->update($request->only('status', 'title', 'priority', 'timing', 'due_date', 'comment'));
 
         return response()->json(['success' => true]);
     }
