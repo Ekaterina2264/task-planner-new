@@ -31,7 +31,7 @@ class TaskController extends Controller
         return response()->json(['success' => true]);
     }
 
-    ppublic function update(Request $request, Task $task)
+    public function update(Request $request, Task $task)
     {
         $request->validate([
             'status'   => ['sometimes', 'in:new,done'],
