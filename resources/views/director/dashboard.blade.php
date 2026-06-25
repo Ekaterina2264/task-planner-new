@@ -96,7 +96,7 @@ function timingLabel(t, date) {
 }
 
 async function loadEmployees() {
-    const res = await fetch('{{ route("api.employees") }}');
+    const res = await fetch('/api/employees');
     const employees = await res.json();
     const el = document.getElementById('employees-list');
 
