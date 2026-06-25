@@ -44,6 +44,10 @@
             <input type="text" id="task-title" class="form-input" placeholder="Что нужно сделать?">
         </div>
         <div class="form-group">
+            <label class="form-label">Комментарий</label>
+            <textarea id="task-comment" class="form-input" rows="2" placeholder="Комментарий к задаче..."></textarea>
+        </div>
+        <div class="form-group">
             <label class="form-label">Приоритет</label>
             <div class="priority-pills">
                 <div class="priority-pill" data-val="high" onclick="setPriority('high')">🔴 Высокий</div>
