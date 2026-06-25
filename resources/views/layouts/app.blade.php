@@ -39,7 +39,7 @@
             color: var(--sidebar-text); text-decoration: none; font-size: 14px;
             transition: all 0.15s;
         }
-        .sidebar-item:hover { background: var(--sidebar-hover); color: #fff; }
+        .sidebar-item:hover { background: var(--sidebar-hover); color:  var(--accent-text); }
         .sidebar-item.active { background: var(--accent); color: #fff; }
         .sidebar-item svg { width: 18px; height: 18px; flex-shrink: 0; }
         .sidebar-avatar {
@@ -196,19 +196,21 @@
 <div class="sidebar">
     <div class="sidebar-logo">Task<span>sk</span></div>
 
-    <div class="sidebar-section">Меню</div>
+    <div class="sidebar-section"></div>
+
+    @if(auth()->user()->isDirector())
+    <a href="{{ route('director.tasks') }}" class="sidebar-item {{ request()->routeIs('director.tasks') ? 'active' : '' }}">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        Мои задачи
+    </a>
+    @endif
 
     <a href="{{ route('dashboard') }}" class="sidebar-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
         @if(auth()->user()->isDirector()) Команда @else Мои задачи @endif
     </a>
 
-@if(auth()->user()->isDirector())
-<a href="{{ route('director.tasks') }}" class="sidebar-item {{ request()->routeIs('director.tasks') ? 'active' : '' }}">
-    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-    Мои задачи
-</a>
-@endif
+
     <div style="flex: 1;"></div>
 
     <form method="POST" action="/logout" style="margin: 0 16px 8px;">
