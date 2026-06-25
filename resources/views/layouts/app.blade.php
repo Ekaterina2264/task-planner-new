@@ -76,7 +76,7 @@
         }
         .task-card:hover { box-shadow: 0 3px 10px rgba(0,0,0,0.08); }
         .task-checkbox {
-            width: 22px; height: 22px; border-radius: 50%; border: 2px solid #ddd;
+            width: 20px; height: 20px; border-radius: 4px; border: 2px solid #ddd;
             display: flex; align-items: center; justify-content: center;
             cursor: pointer; flex-shrink: 0; transition: all 0.2s;
         }

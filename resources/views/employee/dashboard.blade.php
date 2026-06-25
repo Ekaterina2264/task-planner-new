@@ -4,12 +4,10 @@
 <div class="page-title">Мои задачи</div>
 <div class="page-subtitle">{{ now()->translatedFormat('l, j F Y') }}</div>
 
-{{-- Просроченные --}}
 @if($overdue->isNotEmpty())
 <div class="task-section">
     <div class="task-section-label overdue">
-        Просроченные
-        <span class="task-section-count">{{ $overdue->count() }}</span>
+        Просроченные <span class="task-section-count">{{ $overdue->count() }}</span>
     </div>
     @foreach($overdue as $task)
         @include('partials.task-row', ['task' => $task])
@@ -17,41 +15,43 @@
 </div>
 @endif
 
-{{-- Сегодня --}}
 <div class="task-section">
     <div class="task-section-label">
-        Сегодня
-        <span class="task-section-count">{{ $todayT->count() }}</span>
+        Сегодня <span class="task-section-count">{{ $todayT->count() }}</span>
     </div>
     @forelse($todayT as $task)
         @include('partials.task-row', ['task' => $task])
     @empty
-        <div class="empty-state">
-            <svg fill="none" viewBox="0 0 24 24" stroke="#ddd"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-            Задач на сегодня нет
-        </div>
+        <div class="empty-state">Задач на сегодня нет</div>
     @endforelse
 </div>
 
-{{-- По дате --}}
-@if($scheduled->isNotEmpty())
+@if($tomorrowT->isNotEmpty())
 <div class="task-section">
     <div class="task-section-label">
-        Запланированные
-        <span class="task-section-count">{{ $scheduled->count() }}</span>
+        Завтра <span class="task-section-count">{{ $tomorrowT->count() }}</span>
     </div>
-    @foreach($scheduled as $task)
+    @foreach($tomorrowT as $task)
         @include('partials.task-row', ['task' => $task])
     @endforeach
 </div>
 @endif
 
-{{-- Отложенные --}}
+@if($weekT->isNotEmpty())
+<div class="task-section">
+    <div class="task-section-label">
+        На неделе <span class="task-section-count">{{ $weekT->count() }}</span>
+    </div>
+    @foreach($weekT as $task)
+        @include('partials.task-row', ['task' => $task])
+    @endforeach
+</div>
+@endif
+
 @if($laterT->isNotEmpty())
 <div class="task-section">
     <div class="task-section-label">
-        Отложенные
-        <span class="task-section-count">{{ $laterT->count() }}</span>
+        Потом <span class="task-section-count">{{ $laterT->count() }}</span>
     </div>
     @foreach($laterT as $task)
         @include('partials.task-row', ['task' => $task])
@@ -94,7 +94,7 @@
                     <input type="date" id="task-date" class="form-input">
                 </div>
             </div>
-            
+
             <div class="form-group">
                 <label class="form-label">Комментарий</label>
                 <textarea id="task-comment" class="form-input" rows="2" placeholder="Заметки к задаче..."></textarea>
