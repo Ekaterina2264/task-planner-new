@@ -5,10 +5,10 @@
     <style>
         /* Tappsk-style design */
         :root {
-            --sidebar-bg: #1a1a2e;
-            --sidebar-text: #a0a0b8;
+            --sidebar-bg: #ffffff;
+            --sidebar-text: #666;
             --sidebar-active: #ffffff;
-            --sidebar-hover: #2a2a45;
+            --sidebar-hover: #f5f5fa;
             --accent: #7c6ff7;
             --accent-light: #ede9ff;
             --accent-text: #5b52d4;
@@ -24,10 +24,11 @@
         .sidebar {
             width: 240px; min-height: 100vh; background: var(--sidebar-bg);
             display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 50;
+            border-right: 1px solid #eee;
         }
         .sidebar-logo {
             padding: 24px 20px 20px; font-size: 20px; font-weight: 700;
-            color: #fff; letter-spacing: -0.5px;
+            color: #1a1a2e; letter-spacing: -0.5px;
         }
         .sidebar-logo span { color: var(--accent); }
         .sidebar-section { padding: 6px 12px; font-size: 10px; font-weight: 600;
@@ -43,14 +44,14 @@
         .sidebar-item svg { width: 18px; height: 18px; flex-shrink: 0; }
         .sidebar-avatar {
             margin: auto 16px 20px; padding: 12px 16px; border-radius: 12px;
-            background: #252545; display: flex; align-items: center; gap: 10px;
+            background: #f5f5fa; display: flex; align-items: center; gap: 10px;
         }
         .sidebar-avatar-circle {
             width: 34px; height: 34px; border-radius: 50%; background: var(--accent);
             display: flex; align-items: center; justify-content: center;
             font-size: 13px; font-weight: 600; color: #fff; flex-shrink: 0;
         }
-        .sidebar-avatar-name { font-size: 13px; font-weight: 500; color: #fff; line-height: 1.3; }
+        .sidebar-avatar-name { font-size: 13px; font-weight: 500; color: #1a1a2e; line-height: 1.3; }
         .sidebar-avatar-role { font-size: 11px; color: var(--sidebar-text); }
         .main { margin-left: 240px; min-height: 100vh; padding: 32px 40px; }
         .page-title { font-size: 26px; font-weight: 700; color: #1a1a2e; margin-bottom: 6px; }
