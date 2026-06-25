@@ -35,7 +35,7 @@
         @elseif($task->timing === 'later')
             <span class="badge badge-later">Отложено</span>
         @elseif($task->timing === 'date' && $task->due_date)
-            <span class="badge badge-date">{{ $task->due_date->locale('ru')->translatedFormat('j MMM') }}</span>
+            <span class="badge badge-date">{{ $task->due_date->locale('ru')->isoFormat('D MMM') }}</span>
         @endif
     </div>
 </div>
