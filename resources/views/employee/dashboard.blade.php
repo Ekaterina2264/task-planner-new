@@ -2,7 +2,7 @@
 @section('content')
 
 <div class="page-title">Мои задачи</div>
-<div class="page-subtitle">{{ now()->translatedFormat('l, j F Y') }}</div>
+<div class="page-subtitle">{{ now()->locale('ru')->translatedFormat('l, j F Y') }}</div>
 
 @if($overdue->isNotEmpty())
 <div class="task-section">
