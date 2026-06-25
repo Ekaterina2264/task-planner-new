@@ -2,7 +2,7 @@
     <div
         class="task-checkbox"
         :class="{ 'checked': done }"
-        @click="
+        @click.stop="
             done = !done;
             fetch('{{ route('tasks.update', $task) }}', {
                 method: 'PATCH',
@@ -16,7 +16,12 @@
         </svg>
     </div>
 
-    <span class="task-title" :class="{ 'done': done }">{{ $task->title }}</span>
+    <div style="flex:1;cursor:pointer;" onclick="openEditModal({{ $task->id }}, '{{ addslashes($task->title) }}', '{{ $task->priority }}', '{{ $task->timing }}', '{{ $task->due_date?->format('Y-m-d') }}', '{{ addslashes($task->comment ?? '') }}')">
+        <span class="task-title" :class="{ 'done': done }">{{ $task->title }}</span>
+        @if($task->comment)
+            <div style="font-size:12px;color:#aaa;margin-top:3px;">{{ $task->comment }}</div>
+        @endif
+    </div>
 
     <div class="task-badges">
         @if($task->priority === 'high')
