@@ -94,6 +94,11 @@
                     <input type="date" id="task-date" class="form-input">
                 </div>
             </div>
+            
+            <div class="form-group">
+                <label class="form-label">Комментарий</label>
+                <textarea id="task-comment" class="form-input" rows="2" placeholder="Заметки к задаче..."></textarea>
+            </div>
 
             <button type="button" class="btn-submit" onclick="submitTask()">Создать задачу</button>
             <button type="button" class="btn-cancel" onclick="closeModal()">Отмена</button>
@@ -137,7 +142,7 @@ async function submitTask() {
         priority,
         timing,
         assigned_to: {{ auth()->id() }},
-        _token: '{{ csrf_token() }}'
+        comment: document.getElementById('task-comment').value
     };
     if (timing === 'date') body.due_date = document.getElementById('task-date').value;
 
