@@ -26,6 +26,7 @@ class TaskController extends Controller
             'timing'      => $request->timing,
             'due_date'    => $request->timing === 'date' ? $request->due_date : null,
             'status'      => 'new',
+            'comment'     => $request->comment,
         ]);
 
         return response()->json(['success' => true]);
