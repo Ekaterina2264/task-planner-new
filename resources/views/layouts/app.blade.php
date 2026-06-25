@@ -58,25 +58,24 @@
         .page-subtitle { font-size: 14px; color: #888; margin-bottom: 32px; }
 
         /* Task list */
-        .task-section { margin-bottom: 32px; }
+        .task-section { margin-bottom: 24px; }
         .task-section-label {
-            font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
-            color: #aaa; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+            font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px;
+            color: #7c6ff7; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
         }
         .task-section-label.overdue { color: var(--overdue-color); }
         .task-section-count {
             background: #f0f0f5; border-radius: 20px; padding: 1px 8px;
-            font-size: 11px; color: #888; font-weight: 600;
+            font-size: 11px; color: #aaa; font-weight: 600;
         }
-        .task-section-label.overdue .task-section-count { background: #fff0f0; color: var(--overdue-color); }
         .task-card {
-            background: #fff; border-radius: 14px; margin-bottom: 8px;
-            display: flex; align-items: center; gap: 14px; padding: 14px 18px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: box-shadow 0.15s;
+            background: transparent; border-radius: 0; margin-bottom: 0;
+            display: flex; align-items: center; gap: 12px; padding: 10px 0;
+            box-shadow: none; border-bottom: 1px solid #f5f5f5; transition: none;
         }
-        .task-card:hover { box-shadow: 0 3px 10px rgba(0,0,0,0.08); }
+        .task-card:hover { box-shadow: none; }
         .task-checkbox {
-            width: 20px; height: 20px; border-radius: 4px; border: 2px solid #ddd;
+            width: 20px; height: 20px; border-radius: 4px; border: 2px solid #c5b8fb;
             display: flex; align-items: center; justify-content: center;
             cursor: pointer; flex-shrink: 0; transition: all 0.2s;
         }
