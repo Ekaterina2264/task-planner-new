@@ -20,7 +20,7 @@
             --low-bg: #edfbf3;
             --overdue-color: #ff5c5c;
         }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif; background: #f5f5fa; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif; background: #ffffff; }
         .sidebar {
             width: 240px; min-height: 100vh; background: var(--sidebar-bg);
             display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 50;
@@ -53,20 +53,20 @@
         }
         .sidebar-avatar-name { font-size: 13px; font-weight: 500; color: #1a1a2e; line-height: 1.3; }
         .sidebar-avatar-role { font-size: 11px; color: var(--sidebar-text); }
-        .main { margin-left: 240px; min-height: 100vh; padding: 32px 40px; }
+        .main { margin-left: 240px; min-height: 100vh; padding: 32px 40px; background: #ffffff; }
         .page-title { font-size: 26px; font-weight: 700; color: #1a1a2e; margin-bottom: 6px; }
         .page-subtitle { font-size: 14px; color: #888; margin-bottom: 32px; }
 
         /* Task list */
         .task-section { margin-bottom: 24px; }
         .task-section-label {
-            font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px;
-            color: #7c6ff7; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
+            font-size: 18px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+            color: #5bc8f5; margin-bottom: 8px; margin-top: 16px; display: flex; align-items: center; gap: 8px;
         }
-        .task-section-label.overdue { color: var(--overdue-color); }
+        .task-section-label.overdue { color: #ff5c5c; }
         .task-section-count {
             background: #f0f0f5; border-radius: 20px; padding: 1px 8px;
-            font-size: 11px; color: #aaa; font-weight: 600;
+            font-size: 12px; color: #aaa; font-weight: 600;
         }
         .task-card {
             background: transparent; border-radius: 0; margin-bottom: 0;
