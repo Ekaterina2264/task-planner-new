@@ -4,6 +4,7 @@
     @include('partials.head')
     <meta name="theme-color" content="#ffffff">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <style>
         /* Tappsk-style design */
         :root {
