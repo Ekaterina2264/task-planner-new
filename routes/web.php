@@ -12,7 +12,11 @@ Route::middleware(['auth'])->group(function () {
         $user = auth()->user();
 
         if ($user->isDirector()) {
-            if (request('view') === 'tasks') {
+            if ($user->isDirector()) {
+                if (request('view') === 'team') {
+                    return view('director.dashboard');
+                }
+
                 $tasks = \App\Models\Task::where('assigned_to', $user->id)
                     ->where('status', 'new')
                     ->orderByRaw("CASE priority WHEN 'high' THEN 0 WHEN 'medium' THEN 1 ELSE 2 END")
