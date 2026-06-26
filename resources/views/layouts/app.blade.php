@@ -184,13 +184,6 @@
         .empty-state { text-align: center; padding: 48px 0; color: #bbb; font-size: 14px; }
         .empty-state svg { width: 48px; height: 48px; margin: 0 auto 12px; display: block; }
 
-        @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); transition: transform 0.25s ease; }
-            .sidebar.open { transform: translateX(0); }
-            .main { margin-left: 0; padding: 20px; }
-            .hamburger { display: flex; }
-            .sidebar-overlay { display: block; }
-        }
         .hamburger {
             display: none; position: fixed; top: 16px; left: 16px; z-index: 100;
             width: 40px; height: 40px; border-radius: 10px; background: #fff;
@@ -201,7 +194,14 @@
             display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3);
             z-index: 49;
         }
-    </style>
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); transition: transform 0.25s ease; }
+            .sidebar.open { transform: translateX(0); }
+            .main { margin-left: 0; padding: 20px; }
+            .hamburger { display: flex; }
+        }
+            </style>
 </head>
 <body class="h-full">
 
