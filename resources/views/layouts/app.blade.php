@@ -2,6 +2,8 @@
 <html lang="ru" class="h-full">
 <head>
     @include('partials.head')
+    <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <style>
         /* Tappsk-style design */
         :root {
@@ -19,6 +21,10 @@
             --low: #38c97b;
             --low-bg: #edfbf3;
             --overdue-color: #ff5c5c;
+        }
+        html,
+        body {
+            background: #ffffff;
         }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif; background: #ffffff; }
         .sidebar {
