@@ -144,46 +144,96 @@ async function viewEmployee(id, name) {
 
 function renderTasks(tasks) {
     const container = document.getElementById('emp-tasks-container');
+
     if (!tasks.length) {
         container.innerHTML = '<div class="empty-state"><svg width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="#ddd" style="margin:0 auto 12px;display:block"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>Нет задач</div>';
         return;
     }
 
-    const today = new Date().toDateString();
-    const groups = { overdue: [], today: [], date: [], later: [] };
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const weekEnd = new Date(today);
+    weekEnd.setDate(weekEnd.getDate() + 7);
+
+    const groups = {
+        overdue: [],
+        today: [],
+        tomorrow: [],
+        week: [],
+        later: []
+    };
+
     tasks.forEach(t => {
         if (t.status === 'done') return;
-        if (t.timing === 'date' && t.due_date && new Date(t.due_date) < new Date() && new Date(t.due_date).toDateString() !== today) {
-            groups.overdue.push(t);
-        } else {
-            groups[t.timing]?.push(t) ?? groups.date.push(t);
+
+        if (t.timing === 'today') {
+            groups.today.push(t);
+            return;
         }
+
+        if (t.timing === 'later') {
+            groups.later.push(t);
+            return;
+        }
+
+        if (t.timing === 'date' && t.due_date) {
+            const taskDate = new Date(t.due_date);
+            taskDate.setHours(0, 0, 0, 0);
+
+            if (taskDate < today) {
+                groups.overdue.push(t);
+            } else if (taskDate.getTime() === today.getTime()) {
+                groups.today.push(t);
+            } else if (taskDate.getTime() === tomorrow.getTime()) {
+                groups.tomorrow.push(t);
+            } else if (taskDate > tomorrow && taskDate < weekEnd) {
+                groups.week.push(t);
+            } else {
+                groups.later.push(t);
+            }
+
+            return;
+        }
+
+        groups.later.push(t);
     });
 
     const sections = [
         ['overdue', 'Просроченные', true],
-        ['today',   'Сегодня',      false],
-        ['date',    'Запланированные', false],
-        ['later',   'Отложенные',   false],
+        ['today', 'Сегодня', false],
+        ['tomorrow', 'Завтра', false],
+        ['week', 'На неделе', false],
+        ['later', 'Потом', false],
     ];
 
     let html = '';
+
     sections.forEach(([key, label, isOverdue]) => {
         if (!groups[key].length) return;
+
         html += `<div class="task-section">
             <div class="task-section-label ${isOverdue ? 'overdue' : ''}">
                 ${label} <span class="task-section-count">${groups[key].length}</span>
             </div>`;
+
         groups[key].forEach(t => {
             html += `<div class="task-card">
                 <div class="task-checkbox" style="border-color:#7c6ff7;cursor:default"></div>
-                <span class="task-title">${t.title}</span>
+                <div style="flex:1">
+                    <span class="task-title">${t.title}</span>
+                    ${t.comment ? `<div style="font-size:12px;color:#aaa;margin-top:2px;">${t.comment}</div>` : ''}
+                </div>
                 <div class="task-badges">
                     ${priorityLabel(t.priority)}
                     ${timingLabel(t.timing, t.due_date)}
                 </div>
             </div>`;
         });
+
         html += '</div>';
     });
 
