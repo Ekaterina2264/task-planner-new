@@ -185,24 +185,60 @@
         .empty-state svg { width: 48px; height: 48px; margin: 0 auto 12px; display: block; }
 
         .hamburger {
-            display: none; position: fixed; top: 16px; left: 16px; z-index: 100;
-            width: 40px; height: 40px; border-radius: 10px; background: #fff;
-            border: 1px solid #eee; align-items: center; justify-content: center;
-            cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            display: none;
         }
+
         .sidebar-overlay {
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3);
-            z-index: 49;
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.35);
+            z-index: 90;
         }
 
         @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); transition: transform 0.25s ease; }
-            .sidebar.open { transform: translateX(0); }
-            .main { margin-left: 0; padding: 20px; }
-            .hamburger { display: flex; }
+            .main {
+                margin-left: 0;
+                padding: 84px 22px 24px;
+            }
+
+            .hamburger {
+                display: flex;
+                position: fixed;
+                top: 24px;
+                left: 22px;
+                z-index: 120;
+                width: 44px;
+                height: 44px;
+                border-radius: 14px;
+                background: #fff;
+                border: 1px solid #eee;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+            }
+
+            .sidebar {
+                width: 280px;
+                transform: translateX(-100%);
+                transition: transform 0.25s ease;
+                z-index: 110;
+                border-right: none;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
             .page-title,
-            .page-subtitle { padding-left: 42px;}
-            .sidebar-logo { margin-left: 42px;}
+            .page-subtitle {
+                padding-left: 62px;
+            }
+
+            .sidebar-logo {
+                margin-left: 54px;
+            }
         }
             </style>
 </head>
@@ -214,7 +250,7 @@
         <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
     </svg>
 </button>
-<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 <div class="sidebar">
     <div class="sidebar-logo">Task<span>sk</span></div>
 
@@ -262,9 +298,16 @@
 @endif
 <script>
 function toggleSidebar() {
-    document.querySelector('.sidebar').classList.toggle('open');
-    document.getElementById('sidebar-overlay').style.display =
-        document.querySelector('.sidebar').classList.contains('open') ? 'block' : 'none';
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    sidebar.classList.toggle('open');
+    overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
+}
+
+function closeSidebar() {
+    document.querySelector('.sidebar').classList.remove('open');
+    document.getElementById('sidebar-overlay').style.display = 'none';
 }
 </script>
 
