@@ -253,9 +253,13 @@
                 margin-left: 54px;
                 margin-top: 7px;
             }
-            
+
             .page-header {
                 display: none;
+            }
+
+            .form-input {
+                font-size: 16px;
             }
         }
             </style>
