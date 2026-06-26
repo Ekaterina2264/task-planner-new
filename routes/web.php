@@ -30,6 +30,10 @@ Route::middleware(['auth'])->group(function () {
 
                 return view('director.tasks', compact('overdue', 'todayT', 'tomorrowT', 'weekT', 'laterT'));
             }
+            if (!request()->has('view')) {
+                return redirect()->route('dashboard', ['view' => 'tasks']);
+            }
+
 
             return view('director.dashboard');
         }
