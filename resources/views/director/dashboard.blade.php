@@ -1,9 +1,9 @@
 @extends('layouts.app')
 @section('content')
-
-<div class="page-title">Команда</div>
-<div class="page-subtitle">Список сотрудников и их задачи</div>
-
+<div class="page-header">
+    <div class="page-title">Команда</div>
+    <div class="page-subtitle">Список сотрудников и их задачи</div>
+</div>
 {{-- Список сотрудников --}}
 <div id="employees-view">
     <div id="employees-list">
@@ -224,7 +224,7 @@ function setTiming(val) {
 async function submitTask() {
     const title = document.getElementById('task-title').value.trim();
     if (!title || !currentEmpId) return;
-    const body = { title, priority, timing, assigned_to: currentEmpId };
+    const body = { title, priority, timing, assigned_to: currentEmpId, comment: document.getElementById('task-comment').value };
     if (timing === 'date') body.due_date = document.getElementById('task-date').value;
 
     await fetch('{{ route("tasks.store") }}', {
