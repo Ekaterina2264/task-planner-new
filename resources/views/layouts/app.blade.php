@@ -200,6 +200,9 @@
             .sidebar.open { transform: translateX(0); }
             .main { margin-left: 0; padding: 20px; }
             .hamburger { display: flex; }
+            .page-title,
+            .page-subtitle { padding-left: 42px;}
+            .sidebar-logo { margin-left: 42px;}
         }
             </style>
 </head>
