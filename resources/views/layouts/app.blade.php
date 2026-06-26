@@ -185,14 +185,33 @@
         .empty-state svg { width: 48px; height: 48px; margin: 0 auto 12px; display: block; }
 
         @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); }
+            .sidebar { transform: translateX(-100%); transition: transform 0.25s ease; }
+            .sidebar.open { transform: translateX(0); }
             .main { margin-left: 0; padding: 20px; }
+            .hamburger { display: flex; }
+            .sidebar-overlay { display: block; }
+        }
+        .hamburger {
+            display: none; position: fixed; top: 16px; left: 16px; z-index: 100;
+            width: 40px; height: 40px; border-radius: 10px; background: #fff;
+            border: 1px solid #eee; align-items: center; justify-content: center;
+            cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .sidebar-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3);
+            z-index: 49;
         }
     </style>
 </head>
 <body class="h-full">
 
 {{-- Sidebar --}}
+<button class="hamburger" onclick="toggleSidebar()" aria-label="Меню">
+    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+    </svg>
+</button>
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
 <div class="sidebar">
     <div class="sidebar-logo">Task<span>sk</span></div>
 
@@ -238,6 +257,13 @@
 @if(isset($modal))
     {{ $modal }}
 @endif
+<script>
+function toggleSidebar() {
+    document.querySelector('.sidebar').classList.toggle('open');
+    document.getElementById('sidebar-overlay').style.display =
+        document.querySelector('.sidebar').classList.contains('open') ? 'block' : 'none';
+}
+</script>
 
 @fluxScripts
 </body>
