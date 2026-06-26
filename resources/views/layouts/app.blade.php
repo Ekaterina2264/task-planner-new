@@ -195,11 +195,20 @@
         }
 
         .sidebar-overlay {
-            display: none;
             position: fixed;
             inset: 0;
             background: rgba(0,0,0,0.35);
             z-index: 90;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+
+        .sidebar-overlay.open {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
         }
 
         @media (max-width: 768px) {
@@ -308,22 +317,12 @@ function toggleSidebar() {
     const overlay = document.getElementById('sidebar-overlay');
 
     sidebar.classList.toggle('open');
-
-    if (sidebar.classList.contains('open')) {
-        overlay.style.display = 'block';
-        overlay.style.opacity = '1';
-    } else {
-        overlay.style.display = 'none';
-        overlay.style.opacity = '0';
-    }
+    overlay.classList.toggle('open', sidebar.classList.contains('open'));
 }
 
 function closeSidebar() {
     document.querySelector('.sidebar').classList.remove('open');
-
-    const overlay = document.getElementById('sidebar-overlay');
-    overlay.style.display = 'none';
-    overlay.style.opacity = '0';
+    document.getElementById('sidebar-overlay').classList.remove('open');
 }
 </script>
 
