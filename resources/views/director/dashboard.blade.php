@@ -299,6 +299,15 @@ function groupTasks(tasks) {
     return groups;
 }
 
+function todayProgress(tasks) {
+    const today = localDate();
+    const plannedToday = tasks.filter(task => task.timing === 'today' || (task.timing === 'date' && taskDate(task) === today));
+    return {
+        done: plannedToday.filter(task => task.status === 'done').length,
+        total: plannedToday.length,
+    };
+}
+
 function priorityLabel(priority) {
     if (priority === 'high') return '<span class="badge badge-high">Высокий</span>';
     if (priority === 'low') return '<span class="badge badge-low">Низкий</span>';
@@ -365,7 +374,7 @@ function renderBoard() {
             ${sections.map(([key, label, isOverdue, canDrop]) => `
                 <div class="team-task-section" data-team-section="${key}">
                     <div class="task-section-label ${isOverdue ? 'overdue' : ''}">
-                        ${label} <span class="task-section-count">${groups[key].length}</span>
+                        ${label} <span class="task-section-count ${key === 'today' ? 'task-progress-count' : ''}">${key === 'today' ? `${progress.done}/${progress.total}` : groups[key].length}</span>
                     </div>
                     <div class="team-drop-zone ${groups[key].length ? '' : 'is-empty'}"
                         data-employee-id="${employee.id}" data-section="${key}" data-can-drop="${canDrop ? '1' : '0'}">
@@ -525,6 +534,7 @@ async function toggleTask(event, employeeId, taskId, checkbox) {
 
     if (response.ok) {
         task.status = completed ? 'done' : 'new';
+        renderBoard();
         return;
     }
 
