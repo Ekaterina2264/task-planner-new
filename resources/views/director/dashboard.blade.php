@@ -86,17 +86,17 @@
 
 <style>
 #team-board {
-    margin-top: 28px;
+    margin-top: 22px;
 }
 .employee-board {
-    margin-bottom: 42px;
+    margin-bottom: 30px;
     scroll-margin-top: 24px;
 }
 .employee-board-header {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding-bottom: 12px;
+    padding-bottom: 9px;
     border-bottom: 1px solid #f0f0f4;
 }
 .employee-board-name {
@@ -140,17 +140,21 @@
     margin-left: 0;
 }
 .team-task-section {
-    margin: 16px 0 0;
+    margin: 10px 0 0;
 }
 .team-drop-zone {
-    min-height: 45px;
+    min-height: 38px;
     border: 1px dashed transparent;
     border-radius: 10px;
     transition: background .15s, border-color .15s;
 }
 .team-drop-zone.is-empty {
-    min-height: 24px;
+    min-height: 18px;
 }
+.team-task-section[data-team-section="today"] .task-section-label { color: var(--tappsk-blue); }
+.team-task-section[data-team-section="tomorrow"] .task-section-label { color: var(--tappsk-cyan); }
+.team-task-section[data-team-section="week"] .task-section-label,
+.team-task-section[data-team-section="later"] .task-section-label { color: var(--tappsk-muted); }
 .team-drop-zone.drop-active {
     background: var(--accent-light);
     border-color: var(--accent);
@@ -335,7 +339,7 @@ function renderBoard() {
             </div>
             <div class="employee-board-tasks" ${collapsed ? 'hidden' : ''}>
             ${sections.map(([key, label, isOverdue, canDrop]) => `
-                <div class="team-task-section">
+                <div class="team-task-section" data-team-section="${key}">
                     <div class="task-section-label ${isOverdue ? 'overdue' : ''}">
                         ${label} <span class="task-section-count">${groups[key].length}</span>
                     </div>
