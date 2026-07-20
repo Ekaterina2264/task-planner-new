@@ -16,7 +16,7 @@
         </svg>
     </div>
 
-    <div style="flex:1;cursor:pointer;" onclick="openEditModal({{ $task->id }}, '{{ addslashes($task->title) }}', '{{ $task->priority }}', '{{ $task->timing }}', '{{ $task->due_date?->format('Y-m-d') }}', '{{ addslashes($task->comment ?? '') }}')">
+    <div style="flex:1;cursor:pointer;" onclick="if (window.personalSuppressClickUntil && Date.now() < window.personalSuppressClickUntil) return; openEditModal({{ $task->id }}, '{{ addslashes($task->title) }}', '{{ $task->priority }}', '{{ $task->timing }}', '{{ $task->due_date?->format('Y-m-d') }}', '{{ addslashes($task->comment ?? '') }}')">
         <span class="task-title" :class="{ 'done': done }">{{ $task->title }}</span>
         @if($task->comment)
             <div style="font-size:12px;color:#aaa;margin-top:3px;">{{ $task->comment }}</div>
