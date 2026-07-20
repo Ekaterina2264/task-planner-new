@@ -97,12 +97,12 @@
     align-items: center;
     gap: 12px;
     padding-bottom: 12px;
-    border-bottom: 2px solid #f0eefb;
+    border-bottom: 1px solid #f0f0f4;
 }
 .employee-board-name {
     color: #1a1a2e;
-    font-size: 20px;
-    font-weight: 750;
+    font-size: 18px;
+    font-weight: 650;
 }
 .employee-board-count {
     color: #999;
@@ -115,8 +115,8 @@
     margin-left: auto;
     border: 0;
     border-radius: 50%;
-    background: var(--accent-light);
-    color: var(--accent-text);
+    background: #f1ecff;
+    color: #7650db;
     font-size: 22px;
     line-height: 1;
     cursor: pointer;
@@ -127,14 +127,14 @@
     margin-left: auto;
     border: 0;
     border-radius: 50%;
-    background: #f5f5fa;
-    color: #77758f;
+    background: transparent;
+    color: #aaaab6;
     font-size: 17px;
     cursor: pointer;
     transition: background .15s, transform .15s;
 }
 .employee-collapse:hover {
-    background: #eceaf8;
+    background: #f5f5f8;
 }
 .employee-collapse + .employee-add-task {
     margin-left: 0;
@@ -177,7 +177,7 @@
 }
 .team-nav button {
     border: 0;
-    background: var(--accent);
+    background: var(--tappsk-blue);
     color: #fff;
     box-shadow: 0 4px 18px rgba(124,111,247,.3);
     cursor: pointer;
