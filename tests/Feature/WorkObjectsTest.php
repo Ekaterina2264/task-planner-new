@@ -26,6 +26,7 @@ test('users can create an object and its items', function () {
     $this->actingAs($user)
         ->postJson(route('objects.items.store', $object), [
             'title' => 'Согласовать проект',
+            'comment' => 'Передать заказчику финальную версию',
             'section' => 'documents',
         ])
         ->assertCreated();
@@ -33,6 +34,7 @@ test('users can create an object and its items', function () {
     $item = $object->items()->firstOrFail();
 
     expect($item->title)->toBe('Согласовать проект');
+    expect($item->comment)->toBe('Передать заказчику финальную версию');
     expect($item->section)->toBe('documents');
 });
 
