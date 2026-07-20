@@ -13,9 +13,9 @@
             --accent: #8b5cf6;
             --accent-light: #f1ecff;
             --accent-text: #7650db;
-            --tappsk-blue: #31aaf7;
-            --tappsk-cyan: #61d2f6;
-            --tappsk-muted: #b8b9c8;
+            --tappsk-blue: #2da5f4;
+            --tappsk-cyan: #61ccef;
+            --tappsk-muted: #b6b7c6;
             --high: #ff5c5c;
             --high-bg: #fff0f0;
             --medium: #f4a223;
@@ -35,21 +35,22 @@
             border-right: 1px solid #f0f0f4;
         }
         .sidebar-logo {
-            padding: 24px 20px 24px; font-size: 20px; font-weight: 750;
+            padding: 24px 20px 4px; font-size: 20px; font-weight: 750;
             color: #1a1a2e; letter-spacing: -0.5px;
         }
         .sidebar-logo span { color: var(--accent); }
-        .sidebar-section { padding: 6px 12px; font-size: 10px; font-weight: 600;
-            letter-spacing: 1px; text-transform: uppercase; color: #4a4a6a; margin-top: 8px; }
+        .sidebar-section { display: none; }
         .sidebar-item {
             display: flex; align-items: center; gap: 10px;
-            padding: 10px 16px; margin: 2px 10px; border-radius: 7px;
-            color: #25252b; text-decoration: none; font-size: 14px; font-weight: 500;
+            padding: 8px 16px; margin: 2px 10px; border-radius: 7px;
+            color: #25252b; text-decoration: none; font-size: 14px; font-weight: 400;
             transition: all 0.15s;
         }
         .sidebar-item:hover { background: var(--sidebar-hover); color: #25252b; }
         .sidebar-item.active { background: #eaf8ff; color: #1e1e24; }
-        .sidebar-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+        .sidebar-item.active { font-weight: 500; }
+        .sidebar-item svg { width: 18px; height: 18px; flex-shrink: 0; color: #9698a8; }
+        .sidebar-item.active svg { color: #27272e; }
         .sidebar-avatar {
             margin: auto 16px 20px; padding: 12px 16px; border-radius: 12px;
             background: #f7f7fb; display: flex; align-items: center; gap: 10px;
@@ -61,12 +62,25 @@
         }
         .sidebar-avatar-name { font-size: 13px; font-weight: 500; color: #1a1a2e; line-height: 1.3; }
         .sidebar-avatar-role { font-size: 11px; color: var(--sidebar-text); }
-        .main { margin-left: 240px; min-height: 100vh; padding: 30px 26px; background: #ffffff; }
+        .main { position: relative; margin-left: 240px; min-height: 100vh; padding: 30px 26px 78px 24px; background: #ffffff; }
+        .main::before {
+            content: "✓";
+            position: absolute;
+            top: 16px;
+            left: 50%;
+            color: #5bc8f5;
+            font-size: 30px;
+            font-weight: 800;
+            line-height: 1;
+            transform: translateX(-50%) rotate(-7deg);
+            text-shadow: 7px 2px 0 #b9eaff;
+            pointer-events: none;
+        }
         .page-title { font-size: 24px; font-weight: 750; color: #17171d; margin-bottom: 6px; letter-spacing: -.4px; }
         .page-subtitle { font-size: 14px; color: #888; margin-bottom: 32px; }
 
         /* Task list */
-        .task-section { margin-bottom: 12px; }
+        .task-section { margin-bottom: 0; }
         .task-section-label {
             font-family: "Tappsk Bebas", sans-serif;
             font-size: 25px; font-weight: 400; text-transform: uppercase; letter-spacing: .15px;
@@ -83,7 +97,15 @@
             display: flex; align-items: center; gap: 12px; padding: 4px 0;
             min-height: 30px; box-shadow: none; border-bottom: 0; transition: none;
         }
-        .task-card:hover { box-shadow: none; }
+        .task-card:hover {
+            box-shadow: none;
+            background: #eaf8ff;
+            border-radius: 6px;
+            margin-left: -16px;
+            margin-right: -16px;
+            padding-left: 16px;
+            padding-right: 16px;
+        }
         .task-checkbox {
             width: 18px; height: 18px; border-radius: 4px; border: 2px solid #8b5cf6;
             display: flex; align-items: center; justify-content: center;
@@ -99,9 +121,9 @@
         .badge {
             font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 20px; white-space: nowrap;
         }
-        .badge-high { background: var(--high-bg); color: var(--high); }
-        .badge-medium { background: var(--medium-bg); color: var(--medium); }
-        .badge-low { background: var(--low-bg); color: var(--low); }
+        .badge-high { background: transparent; color: #ff6969; }
+        .badge-medium { background: transparent; color: #e9a433; }
+        .badge-low { background: transparent; color: #43cf83; }
         .badge-date { background: transparent; color: #c6c6d1; padding-right: 0; }
         .badge-today { background: transparent; color: #56bdf1; padding-right: 0; }
         .badge-later { background: transparent; color: #aaaab5; padding-right: 0; }
@@ -129,15 +151,17 @@
 
         /* Add task button */
         .fab {
-            position: fixed; bottom: 32px; right: 40px;
-            width: 52px; height: 52px; border-radius: 50%;
-            background: var(--accent); color: #fff;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; box-shadow: 0 4px 20px rgba(124,111,247,0.4);
-            font-size: 26px; line-height: 1; border: none;
-            transition: transform 0.15s, box-shadow 0.15s;
+            position: fixed; bottom: 0; left: 240px; right: 0;
+            width: auto; height: 58px; border-radius: 0;
+            background: rgba(255,255,255,.97); color: #aeb0c1;
+            display: flex; align-items: center; justify-content: flex-start; gap: 18px;
+            padding: 0 26px; cursor: pointer; box-shadow: none;
+            font-size: 0; line-height: 1; border: none; border-top: 1px solid #f0f0f4;
+            transition: background .15s;
         }
-        .fab:hover { transform: scale(1.08); box-shadow: 0 6px 24px rgba(124,111,247,0.5); }
+        .fab::before { content: "+"; font-size: 27px; font-weight: 300; }
+        .fab::after { content: "Новая задача"; font-size: 14px; font-weight: 400; }
+        .fab:hover { transform: none; box-shadow: none; background: #fbfdff; }
 
         /* Modal */
         .modal-backdrop {
@@ -243,7 +267,7 @@
 
             .main {
                 margin-left: 0;
-                padding: 82px 18px 24px;
+                padding: 82px 18px 74px;
             }
 
             .hamburger {
@@ -278,6 +302,7 @@
             .sidebar-logo {
                 margin-left: 54px;
                 margin-top: 7px;
+                padding-bottom: 14px;
             }
 
             .page-header {
@@ -286,6 +311,12 @@
 
             .form-input {
                 font-size: 16px;
+            }
+
+            .fab {
+                left: 0;
+                height: 56px;
+                padding: 0 18px;
             }
         }
             </style>
