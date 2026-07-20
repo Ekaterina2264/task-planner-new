@@ -140,7 +140,7 @@
     margin-left: 0;
 }
 .team-task-section {
-    margin: 10px 0 0;
+    margin: 5px 0 0;
 }
 .team-drop-zone {
     min-height: 38px;
@@ -150,6 +150,9 @@
 }
 .team-drop-zone.is-empty {
     min-height: 18px;
+    margin-bottom: -14px;
+    position: relative;
+    z-index: 1;
 }
 .team-task-section[data-team-section="today"] .task-section-label { color: var(--tappsk-blue); }
 .team-task-section[data-team-section="tomorrow"] .task-section-label { color: var(--tappsk-cyan); }
