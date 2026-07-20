@@ -50,7 +50,7 @@ class TaskController extends Controller
 
     public function employees()
     {
-        $employees = User::where('role', 'employee')
+        $employees = User::whereKeyNot(auth()->id())
             ->withCount(['tasks as open_tasks_count' => function ($q) {
                 $q->where('status', 'new');
             }])

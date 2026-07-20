@@ -1,63 +1,50 @@
 @extends('layouts.app')
 @section('content')
 
-<div class="page-title">Мои задачи</div>
-<div class="page-subtitle">{{ now()->locale('ru')->translatedFormat('l, j F Y') }}</div>
-
-@if($overdue->isNotEmpty())
-<div class="task-section">
+<div class="task-section personal-task-section" data-personal-section="overdue">
     <div class="task-section-label overdue">
-        Просроченные <span class="task-section-count">{{ $overdue->count() }}</span>
+        Просроченные <span class="task-section-count task-progress-count" data-done="{{ $sectionProgress['overdue']['done'] }}" data-total="{{ $sectionProgress['overdue']['total'] }}">{{ $sectionProgress['overdue']['done'] }}/{{ $sectionProgress['overdue']['total'] }}</span>
     </div>
     @foreach($overdue as $task)
         @include('partials.task-row', ['task' => $task])
     @endforeach
 </div>
-@endif
 
-<div class="task-section">
+<div class="task-section personal-task-section" data-personal-section="today">
     <div class="task-section-label">
-        Сегодня <span class="task-section-count">{{ $todayT->count() }}</span>
+        Сегодня <span class="task-section-count task-progress-count" data-done="{{ $sectionProgress['today']['done'] }}" data-total="{{ $sectionProgress['today']['total'] }}">{{ $sectionProgress['today']['done'] }}/{{ $sectionProgress['today']['total'] }}</span>
     </div>
-    @forelse($todayT as $task)
+    @foreach($todayT as $task)
         @include('partials.task-row', ['task' => $task])
-    @empty
-        <div class="empty-state">Задач на сегодня нет</div>
-    @endforelse
+    @endforeach
 </div>
 
-@if($tomorrowT->isNotEmpty())
-<div class="task-section">
+<div class="task-section personal-task-section" data-personal-section="tomorrow">
     <div class="task-section-label">
-        Завтра <span class="task-section-count">{{ $tomorrowT->count() }}</span>
+        Завтра <span class="task-section-count task-progress-count" data-done="{{ $sectionProgress['tomorrow']['done'] }}" data-total="{{ $sectionProgress['tomorrow']['total'] }}">{{ $sectionProgress['tomorrow']['done'] }}/{{ $sectionProgress['tomorrow']['total'] }}</span>
     </div>
     @foreach($tomorrowT as $task)
         @include('partials.task-row', ['task' => $task])
     @endforeach
 </div>
-@endif
 
-@if($weekT->isNotEmpty())
-<div class="task-section">
+<div class="task-section personal-task-section" data-personal-section="week">
     <div class="task-section-label">
-        На неделе <span class="task-section-count">{{ $weekT->count() }}</span>
+        На неделе <span class="task-section-count task-progress-count" data-done="{{ $sectionProgress['week']['done'] }}" data-total="{{ $sectionProgress['week']['total'] }}">{{ $sectionProgress['week']['done'] }}/{{ $sectionProgress['week']['total'] }}</span>
     </div>
     @foreach($weekT as $task)
         @include('partials.task-row', ['task' => $task])
     @endforeach
 </div>
-@endif
 
-@if($laterT->isNotEmpty())
-<div class="task-section">
+<div class="task-section personal-task-section" data-personal-section="later">
     <div class="task-section-label">
-        Потом <span class="task-section-count">{{ $laterT->count() }}</span>
+        Потом <span class="task-section-count task-progress-count" data-done="{{ $sectionProgress['later']['done'] }}" data-total="{{ $sectionProgress['later']['total'] }}">{{ $sectionProgress['later']['done'] }}/{{ $sectionProgress['later']['total'] }}</span>
     </div>
     @foreach($laterT as $task)
         @include('partials.task-row', ['task' => $task])
     @endforeach
 </div>
-@endif
 
 <button class="fab" onclick="openModal()" title="Новая задача">+</button>
 

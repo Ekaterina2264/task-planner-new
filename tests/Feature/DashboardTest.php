@@ -14,3 +14,44 @@ test('authenticated users can visit the dashboard', function () {
     $response = $this->get(route('dashboard'));
     $response->assertOk();
 });
+
+test('employees see personal tasks and team navigation', function () {
+    $employee = User::factory()->create(['role' => 'employee']);
+
+    $this->actingAs($employee)
+        ->get(route('dashboard'))
+        ->assertOk()
+        ->assertSee('Мои задачи')
+        ->assertSee('Команда');
+});
+
+test('employees can open the team view', function () {
+    $employee = User::factory()->create(['role' => 'employee']);
+
+    $this->actingAs($employee)
+        ->get(route('dashboard', ['view' => 'team']))
+        ->assertOk()
+        ->assertSee('Команда');
+});
+
+test('team list includes everyone except the current user', function () {
+    $director = User::factory()->create([
+        'name' => 'Иван Директоров',
+        'role' => 'director',
+    ]);
+    $alex = User::factory()->create([
+        'name' => 'Алексей Морозов',
+        'role' => 'employee',
+    ]);
+    $maria = User::factory()->create([
+        'name' => 'Мария Соколова',
+        'role' => 'employee',
+    ]);
+
+    $this->actingAs($alex)
+        ->get(route('api.employees'))
+        ->assertOk()
+        ->assertJsonFragment(['id' => $director->id, 'name' => 'Иван Директоров'])
+        ->assertJsonFragment(['id' => $maria->id, 'name' => 'Мария Соколова'])
+        ->assertJsonMissing(['id' => $alex->id, 'name' => 'Алексей Морозов']);
+});
