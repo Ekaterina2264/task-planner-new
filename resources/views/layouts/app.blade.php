@@ -312,6 +312,14 @@
             Команда
     </a>
 
+    <a href="{{ route('dashboard', ['view' => 'objects']) }}"
+        class="sidebar-item {{ request('view') === 'objects' ? 'active' : '' }}">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-2M9 9v.01M9 13v.01M9 17v.01M16 13v.01M16 17v.01"/>
+        </svg>
+        Объекты
+    </a>
+
 
     <div style="flex: 1;"></div>
 
