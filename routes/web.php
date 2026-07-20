@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\WorkObjectController;
+use App\Models\WorkObject;
 
 Route::redirect('/', '/dashboard');
 
@@ -13,6 +15,12 @@ Route::middleware(['auth'])->group(function () {
 
         if (request('view') === 'team') {
             return view('director.dashboard');
+        }
+
+        if (request('view') === 'objects') {
+            $objects = WorkObject::with('items')->orderBy('name')->get();
+
+            return view('objects.index', compact('objects'));
         }
 
         $tasks   = \App\Models\Task::where('assigned_to', $user->id)
@@ -42,6 +50,11 @@ Route::middleware(['auth'])->group(function () {
     // Директор — API
     Route::get('/api/employees', [TaskController::class, 'employees'])->name('api.employees');
     Route::get('/api/employees/{user}/tasks', [TaskController::class, 'employeeTasks'])->name('api.employee.tasks');
+
+    // Объекты
+    Route::post('/objects', [WorkObjectController::class, 'store'])->name('objects.store');
+    Route::post('/objects/{workObject}/items', [WorkObjectController::class, 'storeItem'])->name('objects.items.store');
+    Route::patch('/object-items/{objectItem}', [WorkObjectController::class, 'updateItem'])->name('object-items.update');
 
     
 
