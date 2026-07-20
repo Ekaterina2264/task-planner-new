@@ -68,8 +68,8 @@
         /* Task list */
         .task-section { margin-bottom: 12px; }
         .task-section-label {
-            font-family: "Arial Narrow", "Roboto Condensed", Impact, sans-serif;
-            font-size: 22px; font-weight: 800; text-transform: uppercase; letter-spacing: -.35px;
+            font-family: "Bebas Neue", sans-serif;
+            font-size: 25px; font-weight: 400; text-transform: uppercase; letter-spacing: .15px;
             color: var(--tappsk-cyan); margin-bottom: 5px; margin-top: 14px; display: flex; align-items: center; gap: 8px;
         }
         .task-section-label.overdue { color: #ff5c5c; }
