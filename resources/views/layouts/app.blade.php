@@ -4,6 +4,13 @@
     @include('partials.head')
 
     <style>
+        @font-face {
+            font-family: "Tappsk Bebas";
+            src: url("/fonts/BebasNeue-Regular.otf") format("opentype");
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
         /* Tappsk-style design */
         :root {
             --sidebar-bg: #ffffff;
