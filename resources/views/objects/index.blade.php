@@ -34,7 +34,7 @@
                         <div class="object-section-header">
                             <div class="task-section-label">
                                 {{ $sectionTitle }}
-                                <span class="task-section-count">{{ $items->where('is_completed', false)->count() }}</span>
+                                <span class="task-section-count task-progress-count">{{ $items->where('is_completed', true)->count() }}/{{ $items->count() }}</span>
                             </div>
                             <button type="button" class="object-add-item"
                                 onclick="openItemModal({{ $object->id }}, '{{ $sectionKey }}', '{{ $sectionTitle }}')"
