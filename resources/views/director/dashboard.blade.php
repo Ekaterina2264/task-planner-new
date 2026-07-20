@@ -44,6 +44,41 @@
     </div>
 </div>
 
+<div id="edit-modal" class="modal-backdrop" style="display:none" onclick="closeEditModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-title">Редактировать задачу</div>
+        <div class="form-group">
+            <label class="form-label">Название</label>
+            <input type="text" id="edit-title" class="form-input">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Комментарий</label>
+            <textarea id="edit-comment" class="form-input" rows="3" placeholder="Комментарий к задаче..."></textarea>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Приоритет</label>
+            <div class="priority-pills">
+                <div class="priority-pill" data-val="high" onclick="setEditPriority('high')">🔴 Высокий</div>
+                <div class="priority-pill" data-val="medium" onclick="setEditPriority('medium')">🟡 Средний</div>
+                <div class="priority-pill" data-val="low" onclick="setEditPriority('low')">🟢 Низкий</div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Срок</label>
+            <div class="timing-pills">
+                <div class="timing-pill" data-val="today" onclick="setEditTiming('today')">Сегодня</div>
+                <div class="timing-pill" data-val="later" onclick="setEditTiming('later')">Отложить</div>
+                <div class="timing-pill" data-val="date" onclick="setEditTiming('date')">Конкретная дата</div>
+            </div>
+            <div id="edit-date-field" style="display:none;margin-top:10px">
+                <input type="date" id="edit-date" class="form-input">
+            </div>
+        </div>
+        <button type="button" class="btn-submit" onclick="saveEdit()">Сохранить</button>
+        <button type="button" class="btn-cancel" onclick="closeEditModal()">Отмена</button>
+    </div>
+</div>
+
 <style>
 #team-board {
     margin-top: 28px;
@@ -128,8 +163,12 @@ const sections = [
 let employees = [];
 let currentEmpId = null;
 let draggedTask = null;
+let editingTask = null;
+let suppressTaskClickUntil = 0;
 let priority = 'medium';
 let timing = 'today';
+let editPriority = 'medium';
+let editTiming = 'today';
 
 function escapeHtml(value) {
     return String(value ?? '').replace(/[&<>'"]/g, char => ({
@@ -201,7 +240,7 @@ function taskCard(task, employeeId) {
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
             </svg>
         </div>
-        <div style="flex:1;min-width:140px">
+        <div style="flex:1;min-width:140px;cursor:pointer" onclick="openEditModal(event, ${employeeId}, ${task.id})">
             <span class="task-title">${escapeHtml(task.title)}</span>
             ${task.comment ? `<div style="font-size:12px;color:#aaa;margin-top:2px">${escapeHtml(task.comment)}</div>` : ''}
         </div>
@@ -280,6 +319,7 @@ function bindDragAndDrop() {
         card.addEventListener('dragend', () => {
             card.classList.remove('dragging');
             clearDropHighlights();
+            suppressTaskClickUntil = Date.now() + 300;
             draggedTask = null;
         });
         bindTouchDrag(card);
@@ -339,6 +379,7 @@ function bindTouchDrag(card) {
         card.classList.remove('dragging');
         clearDropHighlights();
         if (active && targetZone) moveTask(draggedTask, targetZone.dataset.section);
+        if (active) suppressTaskClickUntil = Date.now() + 500;
         active = false;
         targetZone = null;
         draggedTask = null;
@@ -379,6 +420,82 @@ async function toggleTask(event, employeeId, taskId, checkbox) {
     checkbox.classList.toggle('checked', !completed);
     title.classList.toggle('done', !completed);
     alert('Не удалось изменить статус задачи. Попробуйте ещё раз.');
+}
+
+function openEditModal(event, employeeId, taskId) {
+    event.stopPropagation();
+    if (Date.now() < suppressTaskClickUntil) return;
+
+    editingTask = getTask(employeeId, taskId);
+    if (!editingTask) return;
+
+    document.getElementById('edit-title').value = editingTask.title;
+    document.getElementById('edit-comment').value = editingTask.comment || '';
+    document.getElementById('edit-date').value = taskDate(editingTask) || '';
+    setEditPriority(editingTask.priority);
+    setEditTiming(editingTask.timing);
+    document.getElementById('edit-modal').style.display = 'flex';
+    document.getElementById('edit-title').focus();
+}
+
+function closeEditModal(event) {
+    if (!event || event.target === document.getElementById('edit-modal')) {
+        document.getElementById('edit-modal').style.display = 'none';
+        editingTask = null;
+    }
+}
+
+function setEditPriority(value) {
+    editPriority = value;
+    document.querySelectorAll('#edit-modal .priority-pill').forEach(pill => {
+        pill.className = 'priority-pill';
+        if (pill.dataset.val === value) pill.classList.add(`active-${value}`);
+    });
+}
+
+function setEditTiming(value) {
+    editTiming = value;
+    document.querySelectorAll('#edit-modal .timing-pill').forEach(pill => pill.classList.toggle('active', pill.dataset.val === value));
+    document.getElementById('edit-date-field').style.display = value === 'date' ? 'block' : 'none';
+}
+
+async function saveEdit() {
+    if (!editingTask) return;
+
+    const title = document.getElementById('edit-title').value.trim();
+    if (!title) {
+        document.getElementById('edit-title').focus();
+        return;
+    }
+
+    const task = editingTask;
+    const updates = {
+        title,
+        comment: document.getElementById('edit-comment').value,
+        priority: editPriority,
+        timing: editTiming,
+        due_date: editTiming === 'date' ? document.getElementById('edit-date').value : null,
+    };
+
+    if (editTiming === 'date' && !updates.due_date) {
+        document.getElementById('edit-date').focus();
+        return;
+    }
+
+    const response = await fetch(`/tasks/${task.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+        body: JSON.stringify(updates),
+    });
+
+    if (!response.ok) {
+        alert('Не удалось сохранить изменения. Попробуйте ещё раз.');
+        return;
+    }
+
+    Object.assign(task, updates);
+    closeEditModal();
+    renderBoard();
 }
 
 async function moveTask(task, section) {
@@ -464,7 +581,12 @@ async function submitTask() {
     }
 }
 
-document.addEventListener('keydown', event => { if (event.key === 'Escape') closeModal(); });
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+        closeModal();
+        closeEditModal();
+    }
+});
 loadTeam();
 </script>
 
