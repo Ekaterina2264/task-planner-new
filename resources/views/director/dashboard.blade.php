@@ -339,6 +339,7 @@ function renderBoard() {
 
     board.innerHTML = employees.map(employee => {
         const groups = groupTasks(employee.tasks);
+        const allGroups = groupTasks(employee.tasks, true);
         const openCount = Object.values(groups).reduce((count, tasks) => count + tasks.length, 0);
         const color = avatarColor(employee.id);
 
