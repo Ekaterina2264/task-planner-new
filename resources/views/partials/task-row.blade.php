@@ -24,18 +24,21 @@
     </div>
 
     <div class="task-badges">
-        @if($task->priority === 'high')
-            <span class="badge badge-high">Высокий</span>
-        @elseif($task->priority === 'low')
-            <span class="badge badge-low">Низкий</span>
-        @endif
-
-        @if($task->timing === 'today')
-            <span class="badge badge-today">Сегодня</span>
-        @elseif($task->timing === 'later')
-            <span class="badge badge-later">Отложено</span>
-        @elseif($task->timing === 'date' && $task->due_date)
-            <span class="badge badge-date">{{ $task->due_date->locale('ru')->isoFormat('D MMM') }}</span>
-        @endif
+        <span class="task-priority-slot">
+            @if($task->priority === 'high')
+                <span class="badge badge-high">Высокий</span>
+            @elseif($task->priority === 'low')
+                <span class="badge badge-low">Низкий</span>
+            @endif
+        </span>
+        <span class="task-date-slot">
+            @if($task->timing === 'today')
+                <span class="badge badge-today">Сегодня</span>
+            @elseif($task->timing === 'later')
+                <span class="badge badge-later">Отложено</span>
+            @elseif($task->timing === 'date' && $task->due_date)
+                <span class="badge badge-date">{{ $task->due_date->locale('ru')->isoFormat('D MMM') }}</span>
+            @endif
+        </span>
     </div>
 </div>
