@@ -9,6 +9,11 @@
     <div class="empty-state">Загрузка...</div>
 </div>
 
+<div class="team-nav" id="team-nav" style="display:none">
+    <button type="button" class="team-nav-previous" onclick="scrollToEmployee(-1)" title="Предыдущий сотрудник" aria-label="Предыдущий сотрудник">↑</button>
+    <button type="button" class="team-nav-next" onclick="scrollToEmployee(1)">Следующий сотрудник ↓</button>
+</div>
+
 <div id="task-modal" class="modal-backdrop" style="display:none" onclick="closeModal(event)">
     <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-title">Задача сотруднику</div>
@@ -85,6 +90,7 @@
 }
 .employee-board {
     margin-bottom: 42px;
+    scroll-margin-top: 24px;
 }
 .employee-board-header {
     display: flex;
@@ -142,11 +148,43 @@
 .team-task-card.dragging {
     opacity: .35;
 }
+.team-nav {
+    position: fixed;
+    right: 36px;
+    bottom: 28px;
+    z-index: 70;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.team-nav button {
+    border: 0;
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 4px 18px rgba(124,111,247,.3);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 650;
+}
+.team-nav-previous {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+.team-nav-next {
+    height: 40px;
+    padding: 0 17px;
+    border-radius: 20px;
+}
+.team-nav button:hover {
+    filter: brightness(.96);
+}
 @media (max-width: 768px) {
     .employee-board { margin-bottom: 34px; }
     .employee-board-name { font-size: 18px; }
     .team-task-card { align-items: flex-start; flex-wrap: wrap; }
     .team-task-card .task-badges { margin-left: 32px; }
+    .team-nav { right: 18px; bottom: 18px; }
 }
 </style>
 
@@ -283,7 +321,19 @@ function renderBoard() {
         </section>`;
     }).join('');
 
+    document.getElementById('team-nav').style.display = employees.length > 1 ? 'flex' : 'none';
     bindDragAndDrop();
+}
+
+function scrollToEmployee(direction) {
+    const boards = [...document.querySelectorAll('.employee-board')];
+    if (!boards.length) return;
+
+    let currentIndex = boards.findIndex(board => board.getBoundingClientRect().bottom > 120);
+    if (currentIndex < 0) currentIndex = boards.length - 1;
+
+    const targetIndex = (currentIndex + direction + boards.length) % boards.length;
+    boards[targetIndex].scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 async function loadTeam() {
