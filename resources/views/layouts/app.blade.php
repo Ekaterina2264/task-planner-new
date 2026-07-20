@@ -409,7 +409,7 @@ function personalLocalDate(offset = 0) {
 
 function updateTaskProgress(checkbox, change) {
     const section = checkbox.closest('.personal-task-section');
-    if (!section || section.dataset.personalSection !== 'today') return;
+    if (!section) return;
 
     const counter = section.querySelector('.task-progress-count');
     if (!counter) return;
