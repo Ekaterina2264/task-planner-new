@@ -63,19 +63,6 @@
         .sidebar-avatar-name { font-size: 13px; font-weight: 500; color: #1a1a2e; line-height: 1.3; }
         .sidebar-avatar-role { font-size: 11px; color: var(--sidebar-text); }
         .main { position: relative; margin-left: 240px; min-height: 100vh; padding: 30px 26px 78px 24px; background: #ffffff; }
-        .main::before {
-            content: "✓";
-            position: absolute;
-            top: 16px;
-            left: 50%;
-            color: #5bc8f5;
-            font-size: 30px;
-            font-weight: 800;
-            line-height: 1;
-            transform: translateX(-50%) rotate(-7deg);
-            text-shadow: 7px 2px 0 #b9eaff;
-            pointer-events: none;
-        }
         .page-title { font-size: 24px; font-weight: 750; color: #17171d; margin-bottom: 6px; letter-spacing: -.4px; }
         .page-subtitle { font-size: 14px; color: #888; margin-bottom: 32px; }
 
