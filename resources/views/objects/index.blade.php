@@ -106,7 +106,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    margin-bottom: 28px;
+    margin-bottom: 22px;
 }
 .new-object-button {
     border: 0;
@@ -119,13 +119,13 @@
     cursor: pointer;
 }
 .object-board {
-    margin-bottom: 42px;
+    margin-bottom: 30px;
 }
 .object-board-header {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding-bottom: 12px;
+    padding-bottom: 9px;
     border-bottom: 1px solid #f0f0f4;
 }
 .object-icon {
@@ -160,14 +160,14 @@
     font-size: 17px;
     cursor: pointer;
 }
-.object-section { margin-top: 18px; }
+.object-section { margin-top: 11px; }
 .object-section-header {
     display: flex;
     align-items: center;
 }
 .object-section-header .task-section-label {
     margin: 0;
-    font-size: 19px;
+    font-size: 25px;
 }
 .object-add-item {
     width: 30px;
@@ -180,7 +180,10 @@
     font-size: 19px;
     cursor: pointer;
 }
-.object-items { min-height: 20px; margin-top: 6px; }
+.object-section:nth-child(1) .task-section-label { color: var(--tappsk-blue); }
+.object-section:nth-child(2) .task-section-label { color: var(--tappsk-cyan); }
+.object-section:nth-child(3) .task-section-label { color: var(--tappsk-muted); }
+.object-items { min-height: 18px; margin-top: 3px; }
 .object-item .task-checkbox {
     padding: 0;
     background: #fff;
