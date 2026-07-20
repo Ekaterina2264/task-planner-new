@@ -133,7 +133,7 @@
 <script>
 const avatarColors = ['#7c6ff7','#38c97b','#ff5c5c','#f4a223','#2f86d4','#e040fb'];
 const sections = [
-    ['overdue', 'Просроченные', true, false],
+    ['overdue', 'Просроченные', true, true],
     ['today', 'Сегодня', false, true],
     ['tomorrow', 'Завтра', false, true],
     ['week', 'На неделе', false, true],
@@ -401,6 +401,7 @@ async function moveTask(task, section) {
     if (!task) return;
 
     const updates = {
+        overdue: { timing: 'date', due_date: localDate(-1) },
         today: { timing: 'today', due_date: null },
         tomorrow: { timing: 'date', due_date: localDate(1) },
         week: { timing: 'date', due_date: localDate(2) },
