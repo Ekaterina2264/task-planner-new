@@ -276,13 +276,13 @@ function taskDate(task) {
     return task.due_date ? String(task.due_date).slice(0, 10) : null;
 }
 
-function groupTasks(tasks) {
+function groupTasks(tasks, includeDone = false) {
     const groups = { overdue: [], today: [], tomorrow: [], week: [], later: [] };
     const today = localDate();
     const tomorrow = localDate(1);
     const weekEnd = localDate(7);
 
-    tasks.filter(task => task.status !== 'done').forEach(task => {
+    tasks.filter(task => includeDone || task.status !== 'done').forEach(task => {
         const dueDate = taskDate(task);
 
         if (task.timing === 'today') groups.today.push(task);
@@ -297,15 +297,6 @@ function groupTasks(tasks) {
     });
 
     return groups;
-}
-
-function todayProgress(tasks) {
-    const today = localDate();
-    const plannedToday = tasks.filter(task => task.timing === 'today' || (task.timing === 'date' && taskDate(task) === today));
-    return {
-        done: plannedToday.filter(task => task.status === 'done').length,
-        total: plannedToday.length,
-    };
 }
 
 function priorityLabel(priority) {
@@ -374,7 +365,7 @@ function renderBoard() {
             ${sections.map(([key, label, isOverdue, canDrop]) => `
                 <div class="team-task-section" data-team-section="${key}">
                     <div class="task-section-label ${isOverdue ? 'overdue' : ''}">
-                        ${label} <span class="task-section-count ${key === 'today' ? 'task-progress-count' : ''}">${key === 'today' ? `${progress.done}/${progress.total}` : groups[key].length}</span>
+                        ${label} <span class="task-section-count task-progress-count">${allGroups[key].filter(task => task.status === 'done').length}/${allGroups[key].length}</span>
                     </div>
                     <div class="team-drop-zone ${groups[key].length ? '' : 'is-empty'}"
                         data-employee-id="${employee.id}" data-section="${key}" data-can-drop="${canDrop ? '1' : '0'}">
