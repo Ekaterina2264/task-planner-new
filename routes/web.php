@@ -23,10 +23,10 @@ Route::middleware(['auth'])->group(function () {
             return view('objects.index', compact('objects'));
         }
 
-        $tasks   = \App\Models\Task::where('assigned_to', $user->id)
-            ->where('status', 'new')
+        $allTasks = \App\Models\Task::where('assigned_to', $user->id)
             ->orderByRaw("CASE priority WHEN 'high' THEN 0 WHEN 'medium' THEN 1 ELSE 2 END")
             ->get();
+        $tasks = $allTasks->where('status', 'new');
 
         $today     = now()->startOfDay();
         $tomorrow  = now()->addDay()->startOfDay();
@@ -37,10 +37,13 @@ Route::middleware(['auth'])->group(function () {
         $tomorrowT = $tasks->filter(fn($t) => $t->timing === 'date' && $t->due_date && $t->due_date->startOfDay()->eq($tomorrow));
         $weekT     = $tasks->filter(fn($t) => $t->timing === 'date' && $t->due_date && $t->due_date->startOfDay()->gt($tomorrow) && $t->due_date->startOfDay()->lt($weekEnd));
         $laterT    = $tasks->filter(fn($t) => $t->timing === 'later' || ($t->timing === 'date' && $t->due_date && $t->due_date->startOfDay()->gte($weekEnd)));
+        $todayAll  = $allTasks->filter(fn($t) => $t->timing === 'today' || ($t->timing === 'date' && $t->due_date && $t->due_date->startOfDay()->eq($today)));
+        $todayDone = $todayAll->where('status', 'done')->count();
+        $todayTotal = $todayAll->count();
 
         $tasksView = $user->isDirector() ? 'director.tasks' : 'employee.dashboard';
 
-        return view($tasksView, compact('overdue', 'todayT', 'tomorrowT', 'weekT', 'laterT'));
+        return view($tasksView, compact('overdue', 'todayT', 'tomorrowT', 'weekT', 'laterT', 'todayDone', 'todayTotal'));
     })->name('dashboard');
 
     // Задачи
