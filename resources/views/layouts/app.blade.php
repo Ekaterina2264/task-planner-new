@@ -68,9 +68,9 @@
         /* Task list */
         .task-section { margin-bottom: 12px; }
         .task-section-label {
-            font-family: "Bebas Neue", sans-serif;
+            font-family: "Tappsk Bebas", sans-serif;
             font-size: 25px; font-weight: 400; text-transform: uppercase; letter-spacing: .15px;
-            color: var(--tappsk-cyan); margin-bottom: 5px; margin-top: 14px; display: flex; align-items: center; gap: 8px;
+            color: var(--tappsk-cyan); margin-bottom: 3px; margin-top: 10px; display: flex; align-items: center; gap: 8px;
         }
         .task-section-label.overdue { color: #ff5c5c; }
         .task-section-count {
@@ -80,8 +80,8 @@
         }
         .task-card {
             background: transparent; border-radius: 0; margin-bottom: 0;
-            display: flex; align-items: center; gap: 12px; padding: 7px 0;
-            min-height: 34px; box-shadow: none; border-bottom: 0; transition: none;
+            display: flex; align-items: center; gap: 12px; padding: 4px 0;
+            min-height: 30px; box-shadow: none; border-bottom: 0; transition: none;
         }
         .task-card:hover { box-shadow: none; }
         .task-checkbox {
@@ -93,7 +93,7 @@
         .task-checkbox.checked { background: var(--accent); border-color: var(--accent); }
         .task-checkbox svg { width: 12px; height: 12px; color: #fff; display: none; }
         .task-checkbox.checked svg { display: block; }
-        .task-title { flex: 1; font-size: 14px; color: #1c1c22; font-weight: 500; line-height: 1.35; }
+        .task-title { flex: 1; font-size: 14px; color: #1c1c22; font-weight: 400; line-height: 1.35; }
         .task-title.done { text-decoration: line-through; color: #bbb; }
         .task-badges { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
         .badge {
@@ -194,7 +194,7 @@
         .empty-state { text-align: center; padding: 48px 0; color: #bbb; font-size: 14px; }
         .empty-state svg { width: 48px; height: 48px; margin: 0 auto 12px; display: block; }
         .personal-task-section {
-            min-height: 54px;
+            min-height: 38px;
             border: 1px dashed transparent;
             border-radius: 10px;
             transition: background .15s, border-color .15s;
