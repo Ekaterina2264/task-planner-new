@@ -158,6 +158,9 @@
 }
 .team-task-section {
     margin: 5px 0 0;
+    border: 1px dashed transparent;
+    border-radius: 10px;
+    transition: background .15s, border-color .15s;
 }
 .team-drop-zone {
     min-height: 38px;
@@ -175,7 +178,7 @@
 .team-task-section[data-team-section="tomorrow"] .task-section-label { color: var(--tappsk-cyan); }
 .team-task-section[data-team-section="week"] .task-section-label,
 .team-task-section[data-team-section="later"] .task-section-label { color: var(--tappsk-muted); }
-.team-drop-zone.drop-active {
+.team-task-section.drop-active {
     background: var(--accent-light);
     border-color: var(--accent);
 }
@@ -364,7 +367,8 @@ function renderBoard() {
             </div>
             <div class="employee-board-tasks" ${collapsed ? 'hidden' : ''}>
             ${sections.map(([key, label, isOverdue, canDrop]) => `
-                <div class="team-task-section" data-team-section="${key}">
+                <div class="team-task-section" data-team-section="${key}"
+                    data-employee-id="${employee.id}" data-can-drop="${canDrop ? '1' : '0'}">
                     <div class="task-section-label ${isOverdue ? 'overdue' : ''}">
                         ${label} <span class="task-section-count task-progress-count">${allGroups[key].filter(task => task.status === 'done').length}/${allGroups[key].length}</span>
                     </div>
@@ -437,16 +441,16 @@ function bindDragAndDrop() {
         bindTouchDrag(card);
     });
 
-    document.querySelectorAll('.team-drop-zone[data-can-drop="1"]').forEach(zone => {
-        zone.addEventListener('dragover', event => {
-            if (!draggedTask || Number(zone.dataset.employeeId) !== Number(draggedTask.assigned_to)) return;
+    document.querySelectorAll('.team-task-section[data-can-drop="1"]').forEach(section => {
+        section.addEventListener('dragover', event => {
+            if (!draggedTask || Number(section.dataset.employeeId) !== Number(draggedTask.assigned_to)) return;
             event.preventDefault();
             clearDropHighlights();
-            zone.classList.add('drop-active');
+            section.classList.add('drop-active');
         });
-        zone.addEventListener('drop', event => {
+        section.addEventListener('drop', event => {
             event.preventDefault();
-            moveTask(draggedTask, zone.dataset.section);
+            moveTask(draggedTask, section.dataset.teamSection);
         });
     });
 }
@@ -481,7 +485,7 @@ function bindTouchDrag(card) {
         event.preventDefault();
         clearDropHighlights();
         const element = document.elementFromPoint(touch.clientX, touch.clientY);
-        const zone = element?.closest('.team-drop-zone[data-can-drop="1"]');
+        const zone = element?.closest('.team-task-section[data-can-drop="1"]');
         targetZone = zone && Number(zone.dataset.employeeId) === Number(draggedTask.assigned_to) ? zone : null;
         targetZone?.classList.add('drop-active');
     }, { passive: false });
@@ -490,7 +494,7 @@ function bindTouchDrag(card) {
         clearTimeout(timer);
         card.classList.remove('dragging');
         clearDropHighlights();
-        if (active && targetZone) moveTask(draggedTask, targetZone.dataset.section);
+        if (active && targetZone) moveTask(draggedTask, targetZone.dataset.teamSection);
         if (active) suppressTaskClickUntil = Date.now() + 500;
         active = false;
         targetZone = null;
