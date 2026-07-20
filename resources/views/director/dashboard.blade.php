@@ -113,25 +113,42 @@
     width: 34px;
     height: 34px;
     margin-left: auto;
+    padding: 0;
     border: 0;
     border-radius: 50%;
     background: #f1ecff;
     color: #7650db;
-    font-size: 22px;
-    line-height: 1;
+    display: grid;
+    place-items: center;
     cursor: pointer;
+}
+.employee-add-task svg {
+    width: 17px;
+    height: 17px;
+    display: block;
 }
 .employee-collapse {
     width: 34px;
     height: 34px;
     margin-left: auto;
+    padding: 0;
     border: 0;
     border-radius: 50%;
     background: transparent;
     color: #aaaab6;
-    font-size: 17px;
+    display: grid;
+    place-items: center;
     cursor: pointer;
-    transition: background .15s, transform .15s;
+    transition: background .15s;
+}
+.employee-collapse svg {
+    width: 16px;
+    height: 16px;
+    display: block;
+    transition: transform .18s ease;
+}
+.employee-collapse.is-collapsed svg {
+    transform: rotate(180deg);
 }
 .employee-collapse:hover {
     background: #f5f5f8;
@@ -334,11 +351,15 @@ function renderBoard() {
                     <div class="employee-board-name">${escapeHtml(employee.name)}</div>
                     <div class="employee-board-count">${openCount} открытых задач</div>
                 </div>
-                <button class="employee-collapse" onclick="toggleEmployee(${employee.id})"
+                <button class="employee-collapse ${collapsed ? 'is-collapsed' : ''}" onclick="toggleEmployee(${employee.id})"
                     title="${collapsed ? 'Развернуть задачи' : 'Свернуть задачи'}"
                     aria-label="${collapsed ? 'Развернуть задачи' : 'Свернуть задачи'}"
-                    aria-expanded="${collapsed ? 'false' : 'true'}">${collapsed ? '⌄' : '⌃'}</button>
-                <button class="employee-add-task" onclick="openAddModal(${employee.id})" title="Добавить задачу">+</button>
+                    aria-expanded="${collapsed ? 'false' : 'true'}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>
+                </button>
+                <button class="employee-add-task" onclick="openAddModal(${employee.id})" title="Добавить задачу" aria-label="Добавить задачу">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                </button>
             </div>
             <div class="employee-board-tasks" ${collapsed ? 'hidden' : ''}>
             ${sections.map(([key, label, isOverdue, canDrop]) => `
