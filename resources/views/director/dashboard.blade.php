@@ -212,6 +212,11 @@ function timingLabel(task) {
 function taskCard(task, employeeId) {
     return `<div class="task-card team-task-card" draggable="true" data-task-id="${task.id}" data-employee-id="${employeeId}">
         <span class="drag-handle" aria-hidden="true">⠿</span>
+        <div class="task-checkbox" onclick="toggleTask(event, ${employeeId}, ${task.id}, this)" draggable="false">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+        </div>
         <div style="flex:1;min-width:140px">
             <span class="task-title">${escapeHtml(task.title)}</span>
             ${task.comment ? `<div style="font-size:12px;color:#aaa;margin-top:2px">${escapeHtml(task.comment)}</div>` : ''}
@@ -280,6 +285,10 @@ async function loadTeam() {
 function bindDragAndDrop() {
     document.querySelectorAll('.team-task-card').forEach(card => {
         card.addEventListener('dragstart', event => {
+            if (event.target.closest('.task-checkbox')) {
+                event.preventDefault();
+                return;
+            }
             draggedTask = getTask(card.dataset.employeeId, card.dataset.taskId);
             card.classList.add('dragging');
             event.dataTransfer.effectAllowed = 'move';
@@ -314,6 +323,7 @@ function bindTouchDrag(card) {
     let targetZone = null;
 
     card.addEventListener('touchstart', event => {
+        if (event.target.closest('.task-checkbox')) return;
         const touch = event.touches[0];
         startX = touch.clientX;
         startY = touch.clientY;
@@ -357,6 +367,34 @@ function getTask(employeeId, taskId) {
 
 function clearDropHighlights() {
     document.querySelectorAll('.drop-active').forEach(zone => zone.classList.remove('drop-active'));
+}
+
+async function toggleTask(event, employeeId, taskId, checkbox) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const task = getTask(employeeId, taskId);
+    if (!task) return;
+
+    const completed = task.status !== 'done';
+    const title = checkbox.closest('.team-task-card').querySelector('.task-title');
+    checkbox.classList.toggle('checked', completed);
+    title.classList.toggle('done', completed);
+
+    const response = await fetch(`/tasks/${task.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+        body: JSON.stringify({ status: completed ? 'done' : 'new' }),
+    });
+
+    if (response.ok) {
+        task.status = completed ? 'done' : 'new';
+        return;
+    }
+
+    checkbox.classList.toggle('checked', !completed);
+    title.classList.toggle('done', !completed);
+    alert('Не удалось изменить статус задачи. Попробуйте ещё раз.');
 }
 
 async function moveTask(task, section) {
