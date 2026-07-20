@@ -51,7 +51,12 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                                         </svg>
                                     </button>
-                                    <span class="task-title {{ $item->is_completed ? 'done' : '' }}">{{ $item->title }}</span>
+                                    <div class="object-item-content">
+                                        <span class="task-title {{ $item->is_completed ? 'done' : '' }}">{{ $item->title }}</span>
+                                        @if($item->comment)
+                                            <div class="object-item-comment">{{ $item->comment }}</div>
+                                        @endif
+                                    </div>
                                     @if($item->completed_at)
                                         <span class="object-completed-date">{{ $item->completed_at->format('d.m.Y') }}</span>
                                     @endif
@@ -85,6 +90,10 @@
         <div class="form-group">
             <label class="form-label">Название</label>
             <input type="text" id="item-title" class="form-input" placeholder="Что нужно добавить?">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Комментарий</label>
+            <textarea id="item-comment" class="form-input" rows="3" placeholder="Дополнительная информация..."></textarea>
         </div>
         <button type="button" class="btn-submit" onclick="createObjectItem()">Добавить</button>
         <button type="button" class="btn-cancel" onclick="closeItemModal()">Отмена</button>
@@ -178,6 +187,14 @@
 }
 .object-item .task-checkbox.checked { background: var(--accent); }
 .object-item-completed { order: 2; }
+.object-item-content { flex: 1; min-width: 0; }
+.object-item-comment {
+    color: #aaa;
+    font-size: 12px;
+    line-height: 1.45;
+    margin-top: 3px;
+    white-space: pre-wrap;
+}
 .object-completed-date {
     margin-left: auto;
     color: #aaa;
@@ -239,12 +256,13 @@ async function createObject() {
 
 async function createObjectItem() {
     const title = document.getElementById('item-title').value.trim();
+    const comment = document.getElementById('item-comment').value.trim();
     if (!title || !currentObjectId || !currentSection) return;
 
     const response = await fetch(`/objects/${currentObjectId}/items`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-        body: JSON.stringify({ title, section: currentSection }),
+        body: JSON.stringify({ title, comment, section: currentSection }),
     });
 
     if (response.ok) window.location.reload();
