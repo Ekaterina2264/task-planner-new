@@ -111,7 +111,7 @@
 .new-object-button {
     border: 0;
     border-radius: 20px;
-    background: var(--accent);
+    background: var(--tappsk-blue);
     color: #fff;
     padding: 10px 17px;
     font-size: 13px;
@@ -126,7 +126,7 @@
     align-items: center;
     gap: 12px;
     padding-bottom: 12px;
-    border-bottom: 2px solid #f0eefb;
+    border-bottom: 1px solid #f0f0f4;
 }
 .object-icon {
     width: 44px;
@@ -135,14 +135,14 @@
     align-items: center;
     justify-content: center;
     border-radius: 12px;
-    background: var(--accent-light);
-    color: var(--accent-text);
+    background: #eef9ff;
+    color: var(--tappsk-blue);
 }
 .object-icon svg { width: 21px; height: 21px; }
 .object-name {
     color: #1a1a2e;
-    font-size: 20px;
-    font-weight: 750;
+    font-size: 18px;
+    font-weight: 650;
 }
 .object-count {
     color: #999;
@@ -155,8 +155,8 @@
     margin-left: auto;
     border: 0;
     border-radius: 50%;
-    background: #f5f5fa;
-    color: #77758f;
+    background: transparent;
+    color: #aaaab6;
     font-size: 17px;
     cursor: pointer;
 }
@@ -167,7 +167,7 @@
 }
 .object-section-header .task-section-label {
     margin: 0;
-    font-size: 16px;
+    font-size: 19px;
 }
 .object-add-item {
     width: 30px;
@@ -175,8 +175,8 @@
     margin-left: auto;
     border: 0;
     border-radius: 50%;
-    background: #f5f5fa;
-    color: var(--accent-text);
+    background: transparent;
+    color: #aaaab6;
     font-size: 19px;
     cursor: pointer;
 }
