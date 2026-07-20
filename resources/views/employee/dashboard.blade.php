@@ -1,9 +1,6 @@
 @extends('layouts.app')
 @section('content')
 
-<div class="page-title">Мои задачи</div>
-<div class="page-subtitle">{{ now()->locale('ru')->translatedFormat('l, j F Y') }}</div>
-
 <div class="task-section personal-task-section" data-personal-section="overdue">
     <div class="task-section-label overdue">
         Просроченные <span class="task-section-count">{{ $overdue->count() }}</span>
