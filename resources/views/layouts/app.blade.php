@@ -188,6 +188,22 @@
         .back-btn:hover { opacity: 0.75; }
         .empty-state { text-align: center; padding: 48px 0; color: #bbb; font-size: 14px; }
         .empty-state svg { width: 48px; height: 48px; margin: 0 auto 12px; display: block; }
+        .personal-task-section {
+            min-height: 62px;
+            border: 1px dashed transparent;
+            border-radius: 10px;
+            transition: background .15s, border-color .15s;
+        }
+        .personal-task-section.personal-drop-active {
+            background: var(--accent-light);
+            border-color: var(--accent);
+        }
+        .personal-task-section .task-card {
+            cursor: grab;
+            touch-action: pan-y;
+            user-select: none;
+        }
+        .personal-task-section .task-card.personal-dragging { opacity: .35; }
 
         .hamburger {
             display: none;
@@ -337,6 +353,124 @@ function closeSidebar() {
     document.querySelector('.sidebar').classList.remove('open');
     document.getElementById('sidebar-overlay').classList.remove('open');
 }
+
+function personalLocalDate(offset = 0) {
+    const date = new Date();
+    date.setHours(12, 0, 0, 0);
+    date.setDate(date.getDate() + offset);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function personalSectionUpdate(section) {
+    return {
+        overdue: { timing: 'date', due_date: personalLocalDate(-1) },
+        today: { timing: 'today', due_date: null },
+        tomorrow: { timing: 'date', due_date: personalLocalDate(1) },
+        week: { timing: 'date', due_date: personalLocalDate(2) },
+        later: { timing: 'later', due_date: null },
+    }[section];
+}
+
+async function movePersonalTask(taskId, section) {
+    const updates = personalSectionUpdate(section);
+    if (!taskId || !updates) return;
+
+    const response = await fetch(`/tasks/${taskId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+        body: JSON.stringify(updates),
+    });
+
+    if (response.ok) window.location.reload();
+    else alert('Не удалось перенести задачу. Попробуйте ещё раз.');
+}
+
+function initPersonalTaskDrag() {
+    const sections = [...document.querySelectorAll('.personal-task-section')];
+    if (!sections.length) return;
+
+    let draggedId = null;
+    let touchTarget = null;
+    const clearHighlights = () => sections.forEach(section => section.classList.remove('personal-drop-active'));
+
+    sections.forEach(section => {
+        section.addEventListener('dragover', event => {
+            if (!draggedId) return;
+            event.preventDefault();
+            clearHighlights();
+            section.classList.add('personal-drop-active');
+        });
+        section.addEventListener('drop', event => {
+            event.preventDefault();
+            clearHighlights();
+            movePersonalTask(draggedId, section.dataset.personalSection);
+        });
+    });
+
+    document.querySelectorAll('.personal-task-section .task-card').forEach(card => {
+        const taskId = card.id?.replace('task-', '');
+        card.draggable = true;
+
+        card.addEventListener('dragstart', event => {
+            if (event.target.closest('.task-checkbox')) {
+                event.preventDefault();
+                return;
+            }
+            draggedId = taskId;
+            card.classList.add('personal-dragging');
+            event.dataTransfer.effectAllowed = 'move';
+        });
+        card.addEventListener('dragend', () => {
+            window.personalSuppressClickUntil = Date.now() + 300;
+            draggedId = null;
+            card.classList.remove('personal-dragging');
+            clearHighlights();
+        });
+
+        let timer = null;
+        let active = false;
+        let startX = 0;
+        let startY = 0;
+
+        card.addEventListener('touchstart', event => {
+            if (event.target.closest('.task-checkbox')) return;
+            const touch = event.touches[0];
+            startX = touch.clientX;
+            startY = touch.clientY;
+            timer = setTimeout(() => {
+                active = true;
+                draggedId = taskId;
+                card.classList.add('personal-dragging');
+                if (navigator.vibrate) navigator.vibrate(30);
+            }, 300);
+        }, { passive: true });
+
+        card.addEventListener('touchmove', event => {
+            const touch = event.touches[0];
+            if (!active) {
+                if (Math.abs(touch.clientX - startX) > 8 || Math.abs(touch.clientY - startY) > 8) clearTimeout(timer);
+                return;
+            }
+            event.preventDefault();
+            clearHighlights();
+            touchTarget = document.elementFromPoint(touch.clientX, touch.clientY)?.closest('.personal-task-section') || null;
+            touchTarget?.classList.add('personal-drop-active');
+        }, { passive: false });
+
+        card.addEventListener('touchend', () => {
+            clearTimeout(timer);
+            card.classList.remove('personal-dragging');
+            clearHighlights();
+            if (active) window.personalSuppressClickUntil = Date.now() + 500;
+            if (active && touchTarget) movePersonalTask(draggedId, touchTarget.dataset.personalSection);
+            draggedId = null;
+            touchTarget = null;
+            active = false;
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', initPersonalTaskDrag);
 </script>
 
 @fluxScripts
