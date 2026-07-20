@@ -121,6 +121,24 @@
     line-height: 1;
     cursor: pointer;
 }
+.employee-collapse {
+    width: 34px;
+    height: 34px;
+    margin-left: auto;
+    border: 0;
+    border-radius: 50%;
+    background: #f5f5fa;
+    color: #77758f;
+    font-size: 17px;
+    cursor: pointer;
+    transition: background .15s, transform .15s;
+}
+.employee-collapse:hover {
+    background: #eceaf8;
+}
+.employee-collapse + .employee-add-task {
+    margin-left: 0;
+}
 .team-task-section {
     margin: 16px 0 0;
 }
@@ -203,6 +221,7 @@ let currentEmpId = null;
 let draggedTask = null;
 let editingTask = null;
 let suppressTaskClickUntil = 0;
+const collapsedEmployees = new Set();
 let priority = 'medium';
 let timing = 'today';
 let editPriority = 'medium';
@@ -299,15 +318,22 @@ function renderBoard() {
         const openCount = Object.values(groups).reduce((count, tasks) => count + tasks.length, 0);
         const color = avatarColor(employee.id);
 
-        return `<section class="employee-board">
+        const collapsed = collapsedEmployees.has(employee.id);
+
+        return `<section class="employee-board" data-employee-board-id="${employee.id}">
             <div class="employee-board-header">
                 <div class="emp-avatar" style="background:${color}22;color:${color}">${escapeHtml(initials(employee.name))}</div>
                 <div>
                     <div class="employee-board-name">${escapeHtml(employee.name)}</div>
                     <div class="employee-board-count">${openCount} открытых задач</div>
                 </div>
+                <button class="employee-collapse" onclick="toggleEmployee(${employee.id})"
+                    title="${collapsed ? 'Развернуть задачи' : 'Свернуть задачи'}"
+                    aria-label="${collapsed ? 'Развернуть задачи' : 'Свернуть задачи'}"
+                    aria-expanded="${collapsed ? 'false' : 'true'}">${collapsed ? '⌄' : '⌃'}</button>
                 <button class="employee-add-task" onclick="openAddModal(${employee.id})" title="Добавить задачу">+</button>
             </div>
+            <div class="employee-board-tasks" ${collapsed ? 'hidden' : ''}>
             ${sections.map(([key, label, isOverdue, canDrop]) => `
                 <div class="team-task-section">
                     <div class="task-section-label ${isOverdue ? 'overdue' : ''}">
@@ -318,11 +344,18 @@ function renderBoard() {
                         ${groups[key].length ? groups[key].map(task => taskCard(task, employee.id)).join('') : ''}
                     </div>
                 </div>`).join('')}
+            </div>
         </section>`;
     }).join('');
 
     document.getElementById('team-nav').style.display = employees.length > 1 ? 'flex' : 'none';
     bindDragAndDrop();
+}
+
+function toggleEmployee(employeeId) {
+    if (collapsedEmployees.has(employeeId)) collapsedEmployees.delete(employeeId);
+    else collapsedEmployees.add(employeeId);
+    renderBoard();
 }
 
 function scrollToEmployee(direction) {
