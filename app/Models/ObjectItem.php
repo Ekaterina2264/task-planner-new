@@ -10,6 +10,7 @@ class ObjectItem extends Model
         'work_object_id',
         'section',
         'title',
+        'comment',
         'is_completed',
         'completed_at',
         'created_by',
