@@ -104,7 +104,16 @@
         .task-checkbox.checked svg { display: block; }
         .task-title { flex: 1; font-size: 14px; color: #1c1c22; font-weight: 400; line-height: 1.35; }
         .task-title.done { text-decoration: line-through; color: #bbb; }
-        .task-badges { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+        .task-badges {
+            display: grid;
+            grid-template-columns: 76px 72px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .task-priority-slot,
+        .task-date-slot { display: flex; align-items: center; }
+        .task-priority-slot { justify-content: flex-start; }
+        .task-date-slot { justify-content: flex-end; }
         .badge {
             font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 20px; white-space: nowrap;
         }
