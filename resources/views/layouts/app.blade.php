@@ -76,9 +76,10 @@
         .task-section-label.overdue { color: #ff5c5c; }
         .task-section-count {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-            background: #f4f4f7; border-radius: 20px; padding: 2px 8px;
-            font-size: 11px; color: #a9a9b6; font-weight: 500; letter-spacing: 0;
+            background: #fff; border: 1px solid #ececf2; border-radius: 20px; padding: 3px 9px;
+            font-size: 12px; line-height: 1.1; color: #9999aa; font-weight: 500; letter-spacing: 0;
         }
+        .task-progress-count { min-width: 40px; text-align: center; }
         .task-card {
             background: transparent; border-radius: 0; margin-bottom: 0;
             display: flex; align-items: center; gap: 12px; padding: 4px 0;
@@ -404,6 +405,19 @@ function personalLocalDate(offset = 0) {
     date.setHours(12, 0, 0, 0);
     date.setDate(date.getDate() + offset);
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function updateTaskProgress(checkbox, change) {
+    const section = checkbox.closest('.personal-task-section');
+    if (!section || section.dataset.personalSection !== 'today') return;
+
+    const counter = section.querySelector('.task-progress-count');
+    if (!counter) return;
+
+    const total = Number(counter.dataset.total || 0);
+    const done = Math.max(0, Math.min(total, Number(counter.dataset.done || 0) + change));
+    counter.dataset.done = done;
+    counter.textContent = `${done}/${total}`;
 }
 
 function personalSectionUpdate(section) {
