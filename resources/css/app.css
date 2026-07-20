@@ -1,6 +1,13 @@
 @import 'tailwindcss';
 @import '../../vendor/livewire/flux/dist/flux.css';
-@import '@fontsource/bebas-neue/400.css';
+
+@font-face {
+    font-family: 'Tappsk Bebas';
+    src: url('/fonts/BebasNeue-Regular.otf') format('opentype');
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+}
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
