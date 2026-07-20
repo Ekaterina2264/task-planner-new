@@ -4,7 +4,6 @@
 <div class="page-title">Мои задачи</div>
 <div class="page-subtitle">{{ now()->locale('ru')->translatedFormat('l, j F Y') }}</div>
 
-@if($overdue->isNotEmpty())
 <div class="task-section">
     <div class="task-section-label overdue">
         Просроченные <span class="task-section-count">{{ $overdue->count() }}</span>
@@ -13,7 +12,6 @@
         @include('partials.task-row', ['task' => $task])
     @endforeach
 </div>
-@endif
 
 <div class="task-section">
     <div class="task-section-label">
