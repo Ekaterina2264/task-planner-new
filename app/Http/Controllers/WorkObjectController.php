@@ -26,6 +26,7 @@ class WorkObjectController extends Controller
     {
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
+            'comment' => ['nullable', 'string'],
             'section' => ['required', 'in:documents,crew,materials'],
         ]);
 
