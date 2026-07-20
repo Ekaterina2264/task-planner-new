@@ -3,7 +3,6 @@
 
 <div class="page-header">
     <div class="page-title">Команда</div>
-    <div class="page-subtitle">Все задачи команды на одной странице</div>
 </div>
 
 <div id="team-board">
@@ -46,6 +45,9 @@
 </div>
 
 <style>
+#team-board {
+    margin-top: 28px;
+}
 .employee-board {
     margin-bottom: 42px;
 }
@@ -88,12 +90,7 @@
     transition: background .15s, border-color .15s;
 }
 .team-drop-zone.is-empty {
-    display: flex;
-    align-items: center;
-    padding: 0 12px;
-    border-color: #ececf2;
-    color: #c1c1ca;
-    font-size: 12px;
+    min-height: 24px;
 }
 .team-drop-zone.drop-active {
     background: var(--accent-light);
@@ -110,23 +107,11 @@
 .team-task-card.dragging {
     opacity: .35;
 }
-.drag-handle {
-    color: #c7c7d2;
-    font-size: 17px;
-    letter-spacing: -2px;
-    padding-right: 4px;
-}
-.move-hint {
-    color: #aaa;
-    font-size: 12px;
-    margin: -20px 0 30px;
-}
 @media (max-width: 768px) {
     .employee-board { margin-bottom: 34px; }
     .employee-board-name { font-size: 18px; }
     .team-task-card { align-items: flex-start; flex-wrap: wrap; }
-    .team-task-card .task-badges { margin-left: 27px; }
-    .move-hint { margin-top: -18px; }
+    .team-task-card .task-badges { margin-left: 32px; }
 }
 </style>
 
@@ -211,7 +196,6 @@ function timingLabel(task) {
 
 function taskCard(task, employeeId) {
     return `<div class="task-card team-task-card" draggable="true" data-task-id="${task.id}" data-employee-id="${employeeId}">
-        <span class="drag-handle" aria-hidden="true">⠿</span>
         <div class="task-checkbox" onclick="toggleTask(event, ${employeeId}, ${task.id}, this)" draggable="false">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
@@ -233,7 +217,7 @@ function renderBoard() {
         return;
     }
 
-    board.innerHTML = '<div class="move-hint">Перетащите задачу в нужный раздел мышью или удерживайте её пальцем.</div>' + employees.map(employee => {
+    board.innerHTML = employees.map(employee => {
         const groups = groupTasks(employee.tasks);
         const openCount = Object.values(groups).reduce((count, tasks) => count + tasks.length, 0);
         const color = avatarColor(employee.id);
@@ -254,7 +238,7 @@ function renderBoard() {
                     </div>
                     <div class="team-drop-zone ${groups[key].length ? '' : 'is-empty'}"
                         data-employee-id="${employee.id}" data-section="${key}" data-can-drop="${canDrop ? '1' : '0'}">
-                        ${groups[key].length ? groups[key].map(task => taskCard(task, employee.id)).join('') : 'Нет задач'}
+                        ${groups[key].length ? groups[key].map(task => taskCard(task, employee.id)).join('') : ''}
                     </div>
                 </div>`).join('')}
         </section>`;
