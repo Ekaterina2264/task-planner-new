@@ -32,18 +32,26 @@ Route::middleware(['auth'])->group(function () {
         $tomorrow  = now()->addDay()->startOfDay();
         $weekEnd   = now()->addDays(7)->startOfDay();
 
-        $overdue   = $tasks->filter(fn($t) => $t->timing === 'date' && $t->due_date && $t->due_date->startOfDay()->lt($today));
-        $todayT    = $tasks->filter(fn($t) => $t->timing === 'today' || ($t->timing === 'date' && $t->due_date && $t->due_date->startOfDay()->eq($today)));
-        $tomorrowT = $tasks->filter(fn($t) => $t->timing === 'date' && $t->due_date && $t->due_date->startOfDay()->eq($tomorrow));
-        $weekT     = $tasks->filter(fn($t) => $t->timing === 'date' && $t->due_date && $t->due_date->startOfDay()->gt($tomorrow) && $t->due_date->startOfDay()->lt($weekEnd));
-        $laterT    = $tasks->filter(fn($t) => $t->timing === 'later' || ($t->timing === 'date' && $t->due_date && $t->due_date->startOfDay()->gte($weekEnd)));
-        $todayAll  = $allTasks->filter(fn($t) => $t->timing === 'today' || ($t->timing === 'date' && $t->due_date && $t->due_date->startOfDay()->eq($today)));
-        $todayDone = $todayAll->where('status', 'done')->count();
-        $todayTotal = $todayAll->count();
+        $allBySection = [
+            'overdue' => $allTasks->filter(fn($t) => $t->timing === 'date' && $t->due_date && $t->due_date->startOfDay()->lt($today)),
+            'today' => $allTasks->filter(fn($t) => $t->timing === 'today' || ($t->timing === 'date' && $t->due_date && $t->due_date->startOfDay()->eq($today))),
+            'tomorrow' => $allTasks->filter(fn($t) => $t->timing === 'date' && $t->due_date && $t->due_date->startOfDay()->eq($tomorrow)),
+            'week' => $allTasks->filter(fn($t) => $t->timing === 'date' && $t->due_date && $t->due_date->startOfDay()->gt($tomorrow) && $t->due_date->startOfDay()->lt($weekEnd)),
+            'later' => $allTasks->filter(fn($t) => $t->timing === 'later' || ($t->timing === 'date' && $t->due_date && $t->due_date->startOfDay()->gte($weekEnd))),
+        ];
+        $overdue = $allBySection['overdue']->where('status', 'new');
+        $todayT = $allBySection['today']->where('status', 'new');
+        $tomorrowT = $allBySection['tomorrow']->where('status', 'new');
+        $weekT = $allBySection['week']->where('status', 'new');
+        $laterT = $allBySection['later']->where('status', 'new');
+        $sectionProgress = collect($allBySection)->map(fn($sectionTasks) => [
+            'done' => $sectionTasks->where('status', 'done')->count(),
+            'total' => $sectionTasks->count(),
+        ]);
 
         $tasksView = $user->isDirector() ? 'director.tasks' : 'employee.dashboard';
 
-        return view($tasksView, compact('overdue', 'todayT', 'tomorrowT', 'weekT', 'laterT', 'todayDone', 'todayTotal'));
+        return view($tasksView, compact('overdue', 'todayT', 'tomorrowT', 'weekT', 'laterT', 'sectionProgress'));
     })->name('dashboard');
 
     // Задачи
