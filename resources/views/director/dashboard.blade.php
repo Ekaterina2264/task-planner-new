@@ -308,7 +308,7 @@ function taskCard(task, employeeId) {
             <span class="task-title">${escapeHtml(task.title)}</span>
             ${task.comment ? `<div style="font-size:12px;color:#aaa;margin-top:2px">${escapeHtml(task.comment)}</div>` : ''}
         </div>
-        <div class="task-badges">${priorityLabel(task.priority)}${timingLabel(task)}</div>
+        <div class="task-badges">\n            <span class="task-priority-slot">${priorityLabel(task.priority)}</span>\n            <span class="task-date-slot">${timingLabel(task)}</span>\n        </div>
     </div>`;
 }
 
