@@ -437,9 +437,33 @@ function personalSectionUpdate(section) {
     }[section];
 }
 
+function changeSectionTotal(section, change) {
+    const counter = section?.querySelector('.task-progress-count');
+    if (!counter) return;
+
+    const done = Number(counter.dataset.done || 0);
+    const total = Math.max(done, Number(counter.dataset.total || 0) + change);
+    counter.dataset.total = total;
+    counter.textContent = `${done}/${total}`;
+}
+
+function personalTimingBadge(section, dueDate) {
+    if (section === 'today') return '<span class="badge badge-today">Сегодня</span>';
+    if (section === 'later') return '<span class="badge badge-later">Отложено</span>';
+    if (!dueDate) return '';
+
+    const date = new Date(`${dueDate}T12:00:00`);
+    return `<span class="badge badge-date">${date.toLocaleDateString('ru', { day: 'numeric', month: 'short' })}</span>`;
+}
+
 async function movePersonalTask(taskId, section) {
     const updates = personalSectionUpdate(section);
     if (!taskId || !updates) return;
+
+    const card = document.getElementById(`task-${taskId}`);
+    const sourceSection = card?.closest('.personal-task-section');
+    const targetSection = document.querySelector(`.personal-task-section[data-personal-section="${section}"]`);
+    if (!card || !sourceSection || !targetSection || sourceSection === targetSection) return;
 
     const response = await fetch(`/tasks/${taskId}`, {
         method: 'PATCH',
@@ -447,8 +471,17 @@ async function movePersonalTask(taskId, section) {
         body: JSON.stringify(updates),
     });
 
-    if (response.ok) window.location.reload();
-    else alert('Не удалось перенести задачу. Попробуйте ещё раз.');
+    if (!response.ok) {
+        alert('Не удалось перенести задачу. Попробуйте ещё раз.');
+        return;
+    }
+
+    changeSectionTotal(sourceSection, -1);
+    changeSectionTotal(targetSection, 1);
+    targetSection.appendChild(card);
+
+    const timingSlot = card.querySelector('.task-date-slot');
+    if (timingSlot) timingSlot.innerHTML = personalTimingBadge(section, updates.due_date);
 }
 
 function initPersonalTaskDrag() {
