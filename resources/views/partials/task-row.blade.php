@@ -4,6 +4,7 @@
         :class="{ 'checked': done }"
         @click.stop="
             done = !done;
+            updateTaskProgress($el, done ? 1 : -1);
             fetch('{{ route('tasks.update', $task) }}', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
