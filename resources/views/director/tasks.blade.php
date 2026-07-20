@@ -12,7 +12,7 @@
 
 <div class="task-section personal-task-section" data-personal-section="today">
     <div class="task-section-label">
-        Сегодня <span class="task-section-count">{{ $todayT->count() }}</span>
+        Сегодня <span class="task-section-count task-progress-count" data-done="{{ $todayDone }}" data-total="{{ $todayTotal }}">{{ $todayDone }}/{{ $todayTotal }}</span>
     </div>
     @foreach($todayT as $task)
         @include('partials.task-row', ['task' => $task])
