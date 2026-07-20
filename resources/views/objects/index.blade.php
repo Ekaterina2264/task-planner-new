@@ -41,7 +41,7 @@
                                 title="Добавить пункт">+</button>
                         </div>
 
-                        <div class="object-items">
+                        <div class="object-items {{ $items->isEmpty() ? 'is-empty' : '' }}">
                             @foreach($items as $item)
                                 <div class="task-card object-item {{ $item->is_completed ? 'object-item-completed' : '' }}">
                                     <button type="button" class="task-checkbox {{ $item->is_completed ? 'checked' : '' }}"
