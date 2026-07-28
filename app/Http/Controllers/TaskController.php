@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TaskController extends Controller
 {
@@ -43,7 +44,33 @@ class TaskController extends Controller
             'comment'  => ['nullable', 'string'],
         ]);
 
-        $task->update($request->only('status', 'title', 'priority', 'timing', 'due_date', 'comment'));
+        DB::transaction(function () use ($request, $task) {
+            $task->update($request->only('status', 'title', 'priority', 'timing', 'due_date', 'comment'));
+
+            if (! $task->object_item_id) {
+                return;
+            }
+
+            $itemUpdates = [];
+
+            if ($request->has('status')) {
+                $completed = $request->status === 'done';
+                $itemUpdates['is_completed'] = $completed;
+                $itemUpdates['completed_at'] = $completed ? now() : null;
+            }
+
+            if ($request->has('title')) {
+                $itemUpdates['title'] = $request->title;
+            }
+
+            if ($request->has('comment')) {
+                $itemUpdates['comment'] = $request->comment;
+            }
+
+            if ($itemUpdates) {
+                $task->objectItem()->update($itemUpdates);
+            }
+        });
 
         return response()->json(['success' => true]);
     }
@@ -63,6 +90,7 @@ class TaskController extends Controller
     public function employeeTasks(User $user)
     {
         $tasks = Task::where('assigned_to', $user->id)
+            ->with('objectItem.workObject')
             ->orderByRaw("CASE priority WHEN 'high' THEN 0 WHEN 'medium' THEN 1 ELSE 2 END")
             ->get();
 
