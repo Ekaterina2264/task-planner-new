@@ -326,6 +326,7 @@ function taskCard(task, employeeId) {
         </div>
         <div style="flex:1;min-width:140px;cursor:pointer" onclick="openEditModal(event, ${employeeId}, ${task.id})">
             <span class="task-title">${escapeHtml(task.title)}</span>
+            ${task.object_item?.work_object ? `<div style="font-size:11px;color:var(--tappsk-blue);margin-top:3px">Объект: ${escapeHtml(task.object_item.work_object.name)}</div>` : ''}
             ${task.comment ? `<div style="font-size:12px;color:#aaa;margin-top:2px">${escapeHtml(task.comment)}</div>` : ''}
         </div>
         <div class="task-badges">\n            <span class="task-priority-slot">${priorityLabel(task.priority)}</span>\n            <span class="task-date-slot">${timingLabel(task)}</span>\n        </div>
