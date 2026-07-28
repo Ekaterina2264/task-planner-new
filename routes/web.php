@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\WorkObjectController;
+use App\Models\ObjectItem;
 use App\Models\WorkObject;
 
 Route::redirect('/', '/dashboard');
@@ -19,8 +20,12 @@ Route::middleware(['auth'])->group(function () {
 
         if (request('view') === 'objects') {
             $objects = WorkObject::with(['items', 'deletedItems', 'sections'])->orderBy('name')->get();
+            $deletedItems = ObjectItem::onlyTrashed()
+                ->with(['workObject.sections'])
+                ->orderByDesc('deleted_at')
+                ->get();
 
-            return view('objects.index', compact('objects'));
+            return view('objects.index', compact('objects', 'deletedItems'));
         }
 
         $allTasks = \App\Models\Task::where('assigned_to', $user->id)
@@ -65,6 +70,7 @@ Route::middleware(['auth'])->group(function () {
     // Объекты
     Route::post('/objects', [WorkObjectController::class, 'store'])->name('objects.store');
     Route::patch('/objects/{workObject}', [WorkObjectController::class, 'update'])->name('objects.update');
+    Route::delete('/objects/{workObject}', [WorkObjectController::class, 'destroy'])->name('objects.destroy');
     Route::post('/objects/{workObject}/sections', [WorkObjectController::class, 'storeSection'])->name('objects.sections.store');
     Route::patch('/object-sections/{objectSection}', [WorkObjectController::class, 'updateSection'])->name('object-sections.update');
     Route::delete('/object-sections/{objectSection}', [WorkObjectController::class, 'destroySection'])->name('object-sections.destroy');
