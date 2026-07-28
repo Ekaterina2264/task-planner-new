@@ -104,14 +104,21 @@
         .task-checkbox {
             width: 18px; height: 18px; border-radius: 4px; border: 2px solid #8b5cf6;
             display: flex; align-items: center; justify-content: center;
-            align-self: flex-start; margin-top: 1px;
+            align-self: flex-start; margin-top: 0;
             cursor: pointer; flex-shrink: 0; transition: all 0.2s;
         }
         .task-checkbox:hover { border-color: var(--accent); }
         .task-checkbox.checked { background: var(--accent); border-color: var(--accent); }
         .task-checkbox svg { width: 12px; height: 12px; color: #fff; display: none; }
         .task-checkbox.checked svg { display: block; }
-        .task-title { flex: 1; font-size: 14px; color: #1c1c22; font-weight: 400; line-height: 1.35; }
+        .task-title {
+            display: block;
+            min-height: 18px;
+            font-size: 14px;
+            line-height: 18px;
+            color: #1c1c22;
+            font-weight: 400;
+        }
         .task-title.done { text-decoration: line-through; color: #bbb; }
         .task-badges {
             display: grid;
