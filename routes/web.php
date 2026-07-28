@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\WorkObjectController;
+use App\Models\ActivityLog;
 use App\Models\ObjectItem;
 use App\Models\User;
 use App\Models\WorkObject;
@@ -16,7 +17,12 @@ Route::middleware(['auth'])->group(function () {
         $user = auth()->user();
 
         if (request('view') === 'team') {
-            return view('director.dashboard');
+            $objects = WorkObject::withCount([
+                'items as active_items_count' => fn ($query) => $query->where('is_completed', false),
+                'items',
+            ])->orderBy('name')->get();
+
+            return view('director.dashboard', compact('objects'));
         }
 
         if (request('view') === 'objects') {
@@ -28,6 +34,15 @@ Route::middleware(['auth'])->group(function () {
             $employees = User::orderBy('name')->get();
 
             return view('objects.index', compact('objects', 'deletedItems', 'employees'));
+        }
+
+        if (request('view') === 'history') {
+            $activities = ActivityLog::with('user')
+                ->latest()
+                ->limit(200)
+                ->get();
+
+            return view('history.index', compact('activities'));
         }
 
         $allTasks = \App\Models\Task::where('assigned_to', $user->id)

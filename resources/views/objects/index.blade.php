@@ -3,7 +3,6 @@
 @php($avatarColors = ['#7c6ff7', '#38c97b', '#ff5c5c', '#f4a223', '#2f86d4', '#e040fb'])
 
 <div class="objects-page-header">
-    <div class="page-title">Объекты</div>
     <div class="objects-page-actions">
         <button class="new-object-button" type="button" onclick="openObjectModal()">+ Новый объект</button>
         <button class="trash-button" type="button" onclick="openTrashModal()"
@@ -18,7 +17,7 @@
 
 <div class="objects-list">
     @forelse($objects as $object)
-        <section class="object-board" data-object-id="{{ $object->id }}">
+        <section class="object-board" id="object-{{ $object->id }}" data-object-id="{{ $object->id }}">
             <div class="object-board-header">
                 <div class="object-icon">
                     <svg width="21" height="21" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -261,7 +260,7 @@
 .objects-page-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: 16px;
     margin-bottom: 22px;
 }
@@ -963,6 +962,22 @@ document.addEventListener('DOMContentLoaded', () => {
         button.title = 'Развернуть объект';
         button.setAttribute('aria-expanded', 'false');
     });
+
+    const target = window.location.hash ? document.querySelector(window.location.hash) : null;
+    if (target?.classList.contains('object-board')) {
+        const objectId = Number(target.dataset.objectId);
+        const sections = document.getElementById(`object-sections-${objectId}`);
+        const button = target.querySelector('.object-collapse');
+
+        if (sections && button) {
+            sections.hidden = false;
+            button.classList.remove('is-collapsed');
+            button.title = 'Свернуть объект';
+            button.setAttribute('aria-expanded', 'true');
+        }
+
+        requestAnimationFrame(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    }
 });
 
 document.addEventListener('click', () => closeObjectMenus());

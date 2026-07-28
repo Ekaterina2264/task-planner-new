@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\ObjectItem;
 use App\Models\ObjectSection;
 use App\Models\Task;
@@ -34,23 +35,35 @@ class WorkObjectController extends Controller
             return $workObject;
         });
 
+        ActivityLog::record('object.created', "Создан объект «{$workObject->name}»");
+
         return response()->json($workObject, 201);
     }
 
     public function update(Request $request, WorkObject $workObject)
     {
+        $oldName = $workObject->name;
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
         ]);
 
         $workObject->update($validated);
 
+        ActivityLog::record(
+            'object.renamed',
+            "Объект «{$oldName}» переименован",
+            "Новое название: {$workObject->name}"
+        );
+
         return response()->json($workObject->fresh());
     }
 
     public function destroy(WorkObject $workObject)
     {
+        $name = $workObject->name;
         $workObject->delete();
+
+        ActivityLog::record('object.deleted', "Удалён объект «{$name}»");
 
         return response()->noContent();
     }
@@ -67,22 +80,38 @@ class WorkObjectController extends Controller
             'position' => ((int) $workObject->sections()->max('position')) + 1,
         ]);
 
+        ActivityLog::record(
+            'section.created',
+            "Добавлен раздел «{$section->name}»",
+            "Объект: {$workObject->name}"
+        );
+
         return response()->json($section, 201);
     }
 
     public function updateSection(Request $request, ObjectSection $objectSection)
     {
+        $oldName = $objectSection->name;
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
         ]);
 
         $objectSection->update($validated);
 
+        ActivityLog::record(
+            'section.renamed',
+            "Раздел «{$oldName}» переименован",
+            "Новое название: {$objectSection->name}"
+        );
+
         return response()->json($objectSection->fresh());
     }
 
     public function destroySection(ObjectSection $objectSection)
     {
+        $sectionName = $objectSection->name;
+        $objectName = $objectSection->workObject->name;
+
         DB::transaction(function () use ($objectSection) {
             ObjectItem::withTrashed()
                 ->where('work_object_id', $objectSection->work_object_id)
@@ -91,6 +120,12 @@ class WorkObjectController extends Controller
 
             $objectSection->delete();
         });
+
+        ActivityLog::record(
+            'section.deleted',
+            "Удалён раздел «{$sectionName}»",
+            "Объект: {$objectName}"
+        );
 
         return response()->noContent();
     }
@@ -116,6 +151,12 @@ class WorkObjectController extends Controller
 
         $this->syncLinkedTask($item);
 
+        ActivityLog::record(
+            'object-item.created',
+            "Добавлен пункт «{$item->title}»",
+            "Объект: {$workObject->name}"
+        );
+
         return response()->json($item, 201);
     }
 
@@ -132,6 +173,12 @@ class WorkObjectController extends Controller
 
         $this->syncLinkedTask($objectItem);
 
+        ActivityLog::record(
+            $validated['is_completed'] ? 'object-item.completed' : 'object-item.reopened',
+            ($validated['is_completed'] ? 'Выполнен пункт ' : 'Возвращён пункт ') . "«{$objectItem->title}»",
+            "Объект: {$objectItem->workObject->name}"
+        );
+
         return response()->json($objectItem->fresh());
     }
 
@@ -145,13 +192,28 @@ class WorkObjectController extends Controller
 
         $this->syncLinkedTask($objectItem);
 
+        $assigneeName = $objectItem->assignee?->name ?? 'не назначен';
+        ActivityLog::record(
+            'object-item.assigned',
+            "Изменён ответственный пункта «{$objectItem->title}»",
+            "Ответственный: {$assigneeName}"
+        );
+
         return response()->json($objectItem->fresh()->load('assignee'));
     }
 
     public function destroyItem(ObjectItem $objectItem)
     {
+        $itemTitle = $objectItem->title;
+        $objectName = $objectItem->workObject->name;
         $objectItem->linkedTask()->delete();
         $objectItem->delete();
+
+        ActivityLog::record(
+            'object-item.deleted',
+            "Удалён пункт «{$itemTitle}»",
+            "Объект: {$objectName}"
+        );
 
         return response()->noContent();
     }
@@ -168,6 +230,12 @@ class WorkObjectController extends Controller
 
         $item->restore();
         $this->syncLinkedTask($item);
+
+        ActivityLog::record(
+            'object-item.restored',
+            "Восстановлен пункт «{$item->title}»",
+            "Объект: {$item->workObject->name}"
+        );
 
         return response()->json($item->fresh());
     }
