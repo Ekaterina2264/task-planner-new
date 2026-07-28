@@ -188,7 +188,7 @@
         <div class="modal-title" id="section-modal-title">Новый раздел</div>
         <div class="form-group">
             <label class="form-label">Название раздела</label>
-            <input type="text" id="section-name" class="form-input" placeholder="Например, Сметы">
+            <input type="text" id="section-name" class="form-input" placeholder="Введите название раздела">
         </div>
         <button type="button" class="btn-submit" id="section-submit" onclick="saveSection()">Добавить</button>
         <button type="button" class="btn-cancel" onclick="closeSectionModal()">Отмена</button>
@@ -208,12 +208,18 @@
         </div>
         <div class="form-group">
             <label class="form-label">Ответственный</label>
-            <select id="item-assignee" class="form-input">
-                <option value="">Не назначен</option>
-                @foreach($employees as $employee)
-                    <option value="{{ $employee->id }}">{{ $employee->name }}</option>
-                @endforeach
-            </select>
+            <div class="object-select-field">
+                <select id="item-assignee" class="form-input object-select">
+                    <option value="">Не назначен</option>
+                    @foreach($employees as $employee)
+                        <option value="{{ $employee->id }}">{{ $employee->name }}</option>
+                    @endforeach
+                </select>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="m8 10 4 4 4-4"/>
+                </svg>
+            </div>
         </div>
         <button type="button" class="btn-submit" onclick="createObjectItem()">Добавить</button>
         <button type="button" class="btn-cancel" onclick="closeItemModal()">Отмена</button>
@@ -225,12 +231,18 @@
         <div class="modal-title">Ответственный</div>
         <div class="form-group">
             <label class="form-label">Сотрудник</label>
-            <select id="assignee-select" class="form-input">
-                <option value="">Не назначен</option>
-                @foreach($employees as $employee)
-                    <option value="{{ $employee->id }}">{{ $employee->name }}</option>
-                @endforeach
-            </select>
+            <div class="object-select-field">
+                <select id="assignee-select" class="form-input object-select">
+                    <option value="">Не назначен</option>
+                    @foreach($employees as $employee)
+                        <option value="{{ $employee->id }}">{{ $employee->name }}</option>
+                    @endforeach
+                </select>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="m8 10 4 4 4-4"/>
+                </svg>
+            </div>
         </div>
         <button type="button" class="btn-submit" onclick="saveAssignee()">Сохранить</button>
         <button type="button" class="btn-cancel" onclick="closeAssigneeModal()">Отмена</button>
@@ -499,6 +511,29 @@
 .object-item:hover .object-assignee-avatar.is-empty,
 .object-assignee-avatar.is-empty:focus {
     opacity: 1;
+}
+.object-select-field {
+    position: relative;
+}
+.object-select {
+    width: 100%;
+    min-height: 46px;
+    padding: 0 42px 0 14px;
+    appearance: none;
+    -webkit-appearance: none;
+    background: #fff;
+    color: #30303f;
+    cursor: pointer;
+}
+.object-select-field > svg {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    width: 17px;
+    height: 17px;
+    color: #9b9ba7;
+    pointer-events: none;
+    transform: translateY(-50%);
 }
 .object-item-delete {
     width: 28px;
