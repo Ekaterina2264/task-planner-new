@@ -3,7 +3,6 @@
 @php($avatarColors = ['#7c6ff7', '#38c97b', '#ff5c5c', '#f4a223', '#2f86d4', '#e040fb'])
 
 <div class="objects-page-header">
-    <div class="page-title">Объекты</div>
     <div class="objects-page-actions">
         <button class="new-object-button" type="button" onclick="openObjectModal()">+ Новый объект</button>
         <button class="trash-button" type="button" onclick="openTrashModal()"
@@ -261,7 +260,7 @@
 .objects-page-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: 16px;
     margin-bottom: 22px;
 }
