@@ -41,7 +41,12 @@
                         onclick="openSectionModal({{ $object->id }})">+ Раздел</button>
                 </div>
                 <button class="object-collapse" type="button" onclick="toggleObject({{ $object->id }})"
-                    title="Свернуть объект" aria-label="Свернуть объект" aria-expanded="true">⌃</button>
+                    title="Свернуть объект" aria-label="Свернуть объект" aria-expanded="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="m6 15 6-6 6 6"/>
+                    </svg>
+                </button>
             </div>
 
             <div class="object-sections" id="object-sections-{{ $object->id }}">
@@ -353,8 +358,17 @@
     border-radius: 50%;
     background: transparent;
     color: #aaaab6;
-    font-size: 17px;
     cursor: pointer;
+}
+.object-collapse svg {
+    display: block;
+    width: 18px;
+    height: 18px;
+    margin: auto;
+    transition: transform .15s ease;
+}
+.object-collapse.is-collapsed svg {
+    transform: rotate(180deg);
 }
 .object-section { margin-top: 11px; }
 .object-section-header {
@@ -781,7 +795,7 @@ function toggleObject(objectId) {
     const button = document.querySelector(`[data-object-id="${objectId}"] .object-collapse`);
     const collapsed = !sections.hidden;
     sections.hidden = collapsed;
-    button.textContent = collapsed ? '⌄' : '⌃';
+    button.classList.toggle('is-collapsed', collapsed);
     button.title = collapsed ? 'Развернуть объект' : 'Свернуть объект';
     button.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
 
@@ -798,7 +812,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const button = document.querySelector(`[data-object-id="${objectId}"] .object-collapse`);
         if (!sections || !button) return;
         sections.hidden = true;
-        button.textContent = '⌄';
+        button.classList.add('is-collapsed');
         button.title = 'Развернуть объект';
         button.setAttribute('aria-expanded', 'false');
     });
