@@ -308,6 +308,7 @@
 }
 .object-actions {
     display: flex;
+    flex-shrink: 0;
     align-items: center;
     gap: 7px;
     margin-left: auto;
@@ -343,7 +344,9 @@
     cursor: pointer;
 }
 .object-collapse {
+    flex: 0 0 34px;
     width: 34px;
+    min-width: 34px;
     height: 34px;
     margin-left: 2px;
     border: 0;
