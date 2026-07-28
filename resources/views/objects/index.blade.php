@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('content')
+@php($avatarColors = ['#7c6ff7', '#38c97b', '#ff5c5c', '#f4a223', '#2f86d4', '#e040fb'])
 
 <div class="objects-page-header">
     <div class="page-title">Объекты</div>
@@ -85,6 +86,19 @@
                                             <div class="object-item-comment">{{ $item->comment }}</div>
                                         @endif
                                     </div>
+                                    @if($item->assignee)
+                                        @php($assigneeColor = $avatarColors[$item->assigned_to % count($avatarColors)])
+                                        <button type="button" class="object-assignee-avatar"
+                                            style="background: {{ $assigneeColor }}22; color: {{ $assigneeColor }}"
+                                            onclick="openAssigneeModal({{ $item->id }}, {{ $item->assigned_to }})"
+                                            title="Ответственный: {{ $item->assignee->name }}">
+                                            {{ $item->assignee->initials() }}
+                                        </button>
+                                    @else
+                                        <button type="button" class="object-assignee-avatar is-empty"
+                                            onclick="openAssigneeModal({{ $item->id }}, null)"
+                                            title="Назначить ответственного">+</button>
+                                    @endif
                                     @if($item->completed_at)
                                         <span class="object-completed-date">{{ $item->completed_at->format('d.m.Y') }}</span>
                                     @endif
@@ -181,8 +195,34 @@
             <label class="form-label">Комментарий</label>
             <textarea id="item-comment" class="form-input" rows="3" placeholder="Дополнительная информация..."></textarea>
         </div>
+        <div class="form-group">
+            <label class="form-label">Ответственный</label>
+            <select id="item-assignee" class="form-input">
+                <option value="">Не назначен</option>
+                @foreach($employees as $employee)
+                    <option value="{{ $employee->id }}">{{ $employee->name }}</option>
+                @endforeach
+            </select>
+        </div>
         <button type="button" class="btn-submit" onclick="createObjectItem()">Добавить</button>
         <button type="button" class="btn-cancel" onclick="closeItemModal()">Отмена</button>
+    </div>
+</div>
+
+<div id="assignee-modal" class="modal-backdrop" style="display:none" onclick="closeAssigneeModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-title">Ответственный</div>
+        <div class="form-group">
+            <label class="form-label">Сотрудник</label>
+            <select id="assignee-select" class="form-input">
+                <option value="">Не назначен</option>
+                @foreach($employees as $employee)
+                    <option value="{{ $employee->id }}">{{ $employee->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        <button type="button" class="btn-submit" onclick="saveAssignee()">Сохранить</button>
+        <button type="button" class="btn-cancel" onclick="closeAssigneeModal()">Отмена</button>
     </div>
 </div>
 
@@ -373,10 +413,32 @@
     white-space: pre-wrap;
 }
 .object-completed-date {
-    margin-left: auto;
+    margin-left: 4px;
     color: #aaa;
     font-size: 12px;
     white-space: nowrap;
+}
+.object-assignee-avatar {
+    display: inline-flex;
+    flex: 0 0 28px;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    margin-left: auto;
+    border: 0;
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: .2px;
+    cursor: pointer;
+}
+.object-assignee-avatar.is-empty {
+    border: 1px dashed #d4d4dd;
+    background: #fff;
+    color: #b1b1bc;
+    font-size: 16px;
+    font-weight: 400;
 }
 .object-item-delete {
     width: 28px;
@@ -478,6 +540,7 @@ let currentObjectId = null;
 let currentSection = null;
 let editingObjectId = null;
 let editingSectionId = null;
+let editingItemId = null;
 
 function openObjectModal() {
     document.getElementById('object-modal').style.display = 'flex';
@@ -551,6 +614,20 @@ function closeItemModal(event) {
         document.getElementById('item-modal').style.display = 'none';
         currentObjectId = null;
         currentSection = null;
+        document.getElementById('item-assignee').value = '';
+    }
+}
+
+function openAssigneeModal(itemId, assigneeId) {
+    editingItemId = itemId;
+    document.getElementById('assignee-select').value = assigneeId ?? '';
+    document.getElementById('assignee-modal').style.display = 'flex';
+}
+
+function closeAssigneeModal(event) {
+    if (!event || event.target === document.getElementById('assignee-modal')) {
+        document.getElementById('assignee-modal').style.display = 'none';
+        editingItemId = null;
     }
 }
 
@@ -631,16 +708,36 @@ async function deleteSection(sectionId, sectionName, itemsCount) {
 async function createObjectItem() {
     const title = document.getElementById('item-title').value.trim();
     const comment = document.getElementById('item-comment').value.trim();
+    const assignedTo = document.getElementById('item-assignee').value;
     if (!title || !currentObjectId || !currentSection) return;
 
     const response = await fetch(`/objects/${currentObjectId}/items`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-        body: JSON.stringify({ title, comment, section: currentSection }),
+        body: JSON.stringify({
+            title,
+            comment,
+            section: currentSection,
+            assigned_to: assignedTo ? Number(assignedTo) : null,
+        }),
     });
 
     if (response.ok) window.location.reload();
     else alert('Не удалось добавить пункт. Попробуйте ещё раз.');
+}
+
+async function saveAssignee() {
+    if (!editingItemId) return;
+
+    const assigneeId = document.getElementById('assignee-select').value;
+    const response = await fetch(`/object-items/${editingItemId}/assignee`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+        body: JSON.stringify({ assigned_to: assigneeId ? Number(assigneeId) : null }),
+    });
+
+    if (response.ok) window.location.reload();
+    else alert('Не удалось назначить ответственного. Попробуйте ещё раз.');
 }
 
 async function toggleObjectItem(itemId, completed) {
@@ -711,6 +808,7 @@ document.addEventListener('keydown', event => {
         closeRenameObjectModal();
         closeSectionModal();
         closeItemModal();
+        closeAssigneeModal();
     }
 });
 </script>
