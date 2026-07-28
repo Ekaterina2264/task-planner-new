@@ -5,6 +5,24 @@
     <div class="page-title">Команда</div>
 </div>
 
+@if($objects->isNotEmpty())
+    <div class="team-objects" aria-label="Объекты">
+        @foreach($objects as $object)
+            <a class="team-object-link"
+                href="{{ route('dashboard', ['view' => 'objects']) }}#object-{{ $object->id }}"
+                title="{{ $object->name }}">
+                <span class="team-object-circle">
+                    <svg width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-2M9 9v.01M9 13v.01M9 17v.01M16 13v.01M16 17v.01"/>
+                    </svg>
+                    <span>{{ $object->active_items_count }}/{{ $object->items_count }}</span>
+                </span>
+                <span class="team-object-name">{{ $object->name }}</span>
+            </a>
+        @endforeach
+    </div>
+@endif
+
 <div id="team-board">
     <div class="empty-state">Загрузка...</div>
 </div>
@@ -85,8 +103,61 @@
 </div>
 
 <style>
-#team-board {
+.team-objects {
+    display: flex;
+    gap: 16px;
     margin-top: 22px;
+    padding: 2px 0 12px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.team-objects::-webkit-scrollbar {
+    display: none;
+}
+.team-object-link {
+    display: flex;
+    flex: 0 0 86px;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    color: #858593;
+    text-align: center;
+    text-decoration: none;
+}
+.team-object-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    width: 68px;
+    height: 68px;
+    border: 3px solid #dff3ff;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #45bafa, #258ee8);
+    box-shadow: inset 0 0 0 3px #fff, 0 4px 12px rgba(45, 165, 244, .16);
+    color: #fff;
+    transition: transform .15s, box-shadow .15s;
+}
+.team-object-circle span {
+    margin-top: -1px;
+    font-size: 11px;
+    line-height: 1;
+}
+.team-object-link:hover .team-object-circle {
+    transform: translateY(-2px);
+    box-shadow: inset 0 0 0 3px #fff, 0 7px 16px rgba(45, 165, 244, .24);
+}
+.team-object-name {
+    display: -webkit-box;
+    max-width: 86px;
+    overflow: hidden;
+    font-size: 12px;
+    line-height: 1.25;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+#team-board {
+    margin-top: 14px;
 }
 .employee-board {
     margin-bottom: 30px;
