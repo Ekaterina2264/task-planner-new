@@ -104,7 +104,7 @@
         .task-checkbox {
             width: 18px; height: 18px; border-radius: 4px; border: 2px solid #8b5cf6;
             display: flex; align-items: center; justify-content: center;
-            align-self: flex-start; margin-top: 0;
+            align-self: flex-start; margin-top: 3px;
             cursor: pointer; flex-shrink: 0; transition: all 0.2s;
         }
         .task-checkbox:hover { border-color: var(--accent); }
