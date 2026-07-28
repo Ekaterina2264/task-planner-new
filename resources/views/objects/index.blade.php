@@ -76,12 +76,37 @@
                                     @if($item->completed_at)
                                         <span class="object-completed-date">{{ $item->completed_at->format('d.m.Y') }}</span>
                                     @endif
+                                    <button type="button" class="object-item-delete"
+                                        onclick="deleteObjectItem({{ $item->id }})"
+                                        title="Удалить пункт" aria-label="Удалить пункт">×</button>
                                 </div>
                             @endforeach
                         </div>
                     </div>
                 @endforeach
             </div>
+
+            @if($object->deletedItems->isNotEmpty())
+                <details class="object-trash">
+                    <summary>
+                        Удалённые пункты
+                        <span class="object-trash-count">{{ $object->deletedItems->count() }}</span>
+                    </summary>
+                    <div class="object-trash-items">
+                        @foreach($object->deletedItems as $item)
+                            @php($sectionName = $object->sections->firstWhere('key', $item->section)?->name ?? 'Удалённый раздел')
+                            <div class="object-trash-item">
+                                <div class="object-trash-item-content">
+                                    <span class="object-trash-item-title">{{ $item->title }}</span>
+                                    <span class="object-trash-section">{{ $sectionName }}</span>
+                                </div>
+                                <button type="button" class="object-restore-button"
+                                    onclick="restoreObjectItem({{ $item->id }})">Восстановить</button>
+                            </div>
+                        @endforeach
+                    </div>
+                </details>
+            @endif
         </section>
     @empty
         <div class="empty-state">Объектов пока нет</div>
@@ -295,6 +320,90 @@
     font-size: 12px;
     white-space: nowrap;
 }
+.object-item-delete {
+    width: 28px;
+    height: 28px;
+    margin-left: 5px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: #b8b8c2;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity .15s ease, color .15s ease, background .15s ease;
+}
+.object-item:hover .object-item-delete,
+.object-item-delete:focus {
+    opacity: 1;
+}
+.object-item-delete:hover {
+    color: #e05d68;
+    background: #fff1f2;
+}
+.object-trash {
+    margin-top: 18px;
+    border-top: 1px solid #f0f0f4;
+    color: #92929e;
+}
+.object-trash summary {
+    width: fit-content;
+    padding: 12px 0 4px;
+    font-size: 12px;
+    font-weight: 650;
+    cursor: pointer;
+    user-select: none;
+}
+.object-trash-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    margin-left: 5px;
+    padding: 0 6px;
+    border-radius: 10px;
+    background: #f3f3f7;
+    font-size: 11px;
+}
+.object-trash-items {
+    padding: 5px 0 2px;
+}
+.object-trash-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+}
+.object-trash-item-content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+}
+.object-trash-item-title {
+    overflow: hidden;
+    color: #7f7f8c;
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.object-trash-section {
+    margin-top: 2px;
+    color: #b1b1ba;
+    font-size: 11px;
+}
+.object-restore-button {
+    border: 1px solid #e1e1e8;
+    border-radius: 15px;
+    background: #fff;
+    color: var(--tappsk-blue);
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: 650;
+    cursor: pointer;
+}
 @media (max-width: 768px) {
     .objects-page-header { align-items: flex-start; }
     .new-object-button { padding: 9px 13px; }
@@ -302,6 +411,7 @@
     .object-actions { gap: 2px; }
     .object-new-section { padding: 6px 8px; }
     .object-section-actions { opacity: 1; }
+    .object-item-delete { opacity: 1; }
     .object-section-header .task-section-label { font-size: 14px; letter-spacing: .5px; }
 }
 </style>
@@ -462,6 +572,28 @@ async function toggleObjectItem(itemId, completed) {
 
     if (response.ok) window.location.reload();
     else alert('Не удалось изменить статус. Попробуйте ещё раз.');
+}
+
+async function deleteObjectItem(itemId) {
+    if (!confirm('Удалить этот пункт? Его можно будет восстановить.')) return;
+
+    const response = await fetch(`/object-items/${itemId}`, {
+        method: 'DELETE',
+        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+    });
+
+    if (response.ok) window.location.reload();
+    else alert('Не удалось удалить пункт. Попробуйте ещё раз.');
+}
+
+async function restoreObjectItem(itemId) {
+    const response = await fetch(`/object-items/${itemId}/restore`, {
+        method: 'PATCH',
+        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+    });
+
+    if (response.ok) window.location.reload();
+    else alert('Не удалось восстановить пункт. Возможно, его раздел уже удалён.');
 }
 
 function toggleObject(objectId) {
