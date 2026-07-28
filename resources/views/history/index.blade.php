@@ -2,10 +2,7 @@
 @section('content')
 
 <div class="history-header">
-    <div>
-        <div class="page-title">История</div>
-        <div class="history-subtitle">Последние действия в задачах и объектах</div>
-    </div>
+    <div class="page-title">История изменений</div>
 </div>
 
 <div class="history-list">
@@ -51,13 +48,8 @@
     justify-content: space-between;
     margin-bottom: 24px;
 }
-.history-subtitle {
-    margin-top: 3px;
-    color: #9999a5;
-    font-size: 13px;
-}
 .history-list {
-    max-width: 760px;
+    width: 100%;
 }
 .history-day + .history-day {
     margin-top: 26px;
