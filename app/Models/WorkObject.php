@@ -16,6 +16,13 @@ class WorkObject extends Model
             ->orderBy('created_at');
     }
 
+    public function sections()
+    {
+        return $this->hasMany(ObjectSection::class)
+            ->orderBy('position')
+            ->orderBy('id');
+    }
+
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
