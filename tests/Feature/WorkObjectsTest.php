@@ -208,9 +208,50 @@ test('users can assign and change an object item assignee', function () {
         ->assertJsonPath('assignee.name', 'Анна Смирнова');
 
     expect($item->fresh()->assigned_to)->toBe($assignee->id);
+    $linkedTask = $item->fresh()->linkedTask;
+    expect($linkedTask)->not->toBeNull();
+    expect($linkedTask->assigned_to)->toBe($assignee->id);
+    expect($linkedTask->timing)->toBe('later');
+    expect($linkedTask->title)->toBe('Подписать договор');
 
     $this->actingAs($user)
         ->patchJson(route('object-items.assignee', $item), ['assigned_to' => null])
         ->assertOk()
         ->assertJsonPath('assigned_to', null);
+
+    expect($item->fresh()->linkedTask)->toBeNull();
+});
+
+test('object items and linked tasks keep their completion status in sync', function () {
+    $user = User::factory()->create();
+    $object = WorkObject::create([
+        'name' => 'БЦ Атлас',
+        'created_by' => $user->id,
+    ]);
+    $item = ObjectItem::create([
+        'work_object_id' => $object->id,
+        'section' => 'documents',
+        'title' => 'Подписать договор',
+        'assigned_to' => $user->id,
+        'created_by' => $user->id,
+    ]);
+
+    $this->actingAs($user)
+        ->patchJson(route('object-items.assignee', $item), ['assigned_to' => $user->id])
+        ->assertOk();
+
+    $task = $item->linkedTask;
+
+    $this->actingAs($user)
+        ->patchJson(route('tasks.update', $task), ['status' => 'done'])
+        ->assertOk();
+
+    expect($item->fresh()->is_completed)->toBeTrue();
+    expect($item->fresh()->completed_at)->not->toBeNull();
+
+    $this->actingAs($user)
+        ->patchJson(route('object-items.update', $item), ['is_completed' => false])
+        ->assertOk();
+
+    expect($task->fresh()->status)->toBe('new');
 });
