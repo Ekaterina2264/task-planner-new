@@ -21,7 +21,8 @@
                 </div>
                 <div class="object-actions">
                     <button class="object-action-button" type="button"
-                        onclick='openRenameObjectModal({{ $object->id }}, @js($object->name))'
+                        data-name="{{ $object->name }}"
+                        onclick="openRenameObjectModal({{ $object->id }}, this.dataset.name)"
                         title="Переименовать объект">✎</button>
                     <button class="object-new-section" type="button"
                         onclick="openSectionModal({{ $object->id }})">+ Раздел</button>
@@ -41,14 +42,18 @@
                             </div>
                             <div class="object-section-actions">
                                 <button type="button" class="object-section-action"
-                                    onclick='openSectionModal({{ $object->id }}, {{ $section->id }}, @js($section->name))'
+                                    data-name="{{ $section->name }}"
+                                    onclick="openSectionModal({{ $object->id }}, {{ $section->id }}, this.dataset.name)"
                                     title="Переименовать раздел">✎</button>
                                 <button type="button" class="object-section-action object-section-delete"
-                                    onclick='deleteSection({{ $section->id }}, @js($section->name), {{ $items->count() }})'
+                                    data-name="{{ $section->name }}"
+                                    onclick="deleteSection({{ $section->id }}, this.dataset.name, {{ $items->count() }})"
                                     title="Удалить раздел">×</button>
                             </div>
                             <button type="button" class="object-add-item"
-                                onclick='openItemModal({{ $object->id }}, @js($section->key), @js($section->name))'
+                                data-section="{{ $section->key }}"
+                                data-name="{{ $section->name }}"
+                                onclick="openItemModal({{ $object->id }}, this.dataset.section, this.dataset.name)"
                                 title="Добавить пункт">+</button>
                         </div>
 
