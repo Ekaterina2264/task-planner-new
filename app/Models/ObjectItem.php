@@ -14,6 +14,7 @@ class ObjectItem extends Model
         'section',
         'title',
         'comment',
+        'assigned_to',
         'is_completed',
         'completed_at',
         'created_by',
@@ -27,5 +28,10 @@ class ObjectItem extends Model
     public function workObject()
     {
         return $this->belongsTo(WorkObject::class);
+    }
+
+    public function assignee()
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
     }
 }
