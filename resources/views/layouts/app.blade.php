@@ -365,15 +365,15 @@
         Объекты
     </a>
 
+    <div style="flex: 1;"></div>
+
     <a href="{{ route('dashboard', ['view' => 'history']) }}"
-        class="sidebar-item sidebar-history {{ request('view') === 'history' ? 'active' : '' }}">
-        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        style="margin:0 16px;padding:9px 16px;border-radius:10px;color:#4a4a6a;font-size:14px;text-decoration:none;display:flex;align-items:center;gap:10px;">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 2M3.05 11a9 9 0 1 0 .5-3M3 4v4h4"/>
         </svg>
         История изменений
     </a>
-
-    <div style="flex: 1;"></div>
 
     <form method="POST" action="/logout" style="margin: 0 16px 8px;">
         @csrf
