@@ -5,8 +5,12 @@
 <div class="objects-page-header">
     <div class="page-title">Объекты</div>
     <div class="objects-page-actions">
-        <button class="trash-button" type="button" onclick="openTrashModal()">
-            Корзина
+        <button class="trash-button" type="button" onclick="openTrashModal()"
+            title="Корзина" aria-label="Корзина">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 10v6M14 10v6"/>
+            </svg>
             @if($deletedItems->isNotEmpty())
                 <span>{{ $deletedItems->count() }}</span>
             @endif
@@ -61,21 +65,23 @@
                                 {{ $section->name }}
                                 <span class="task-section-count task-progress-count">{{ $items->where('is_completed', true)->count() }}/{{ $items->count() }}</span>
                             </div>
-                            <div class="object-section-actions">
-                                <button type="button" class="object-section-action"
+                            <div class="object-section-controls">
+                                <button type="button" class="object-add-item"
+                                    data-section="{{ $section->key }}"
                                     data-name="{{ $section->name }}"
-                                    onclick="openSectionModal({{ $object->id }}, {{ $section->id }}, this.dataset.name)"
-                                    title="Переименовать раздел">✎</button>
-                                <button type="button" class="object-section-action object-section-delete"
-                                    data-name="{{ $section->name }}"
-                                    onclick="deleteSection({{ $section->id }}, this.dataset.name, {{ $items->count() }})"
-                                    title="Удалить раздел">×</button>
+                                    onclick="openItemModal({{ $object->id }}, this.dataset.section, this.dataset.name)"
+                                    title="Добавить пункт">+</button>
+                                <div class="object-section-actions">
+                                    <button type="button" class="object-section-action"
+                                        data-name="{{ $section->name }}"
+                                        onclick="openSectionModal({{ $object->id }}, {{ $section->id }}, this.dataset.name)"
+                                        title="Переименовать раздел">✎</button>
+                                    <button type="button" class="object-section-action object-section-delete"
+                                        data-name="{{ $section->name }}"
+                                        onclick="deleteSection({{ $section->id }}, this.dataset.name, {{ $items->count() }})"
+                                        title="Удалить раздел">×</button>
+                                </div>
                             </div>
-                            <button type="button" class="object-add-item"
-                                data-section="{{ $section->key }}"
-                                data-name="{{ $section->name }}"
-                                onclick="openItemModal({{ $object->id }}, this.dataset.section, this.dataset.name)"
-                                title="Добавить пункт">+</button>
                         </div>
 
                         <div class="object-items {{ $items->isEmpty() ? 'is-empty' : '' }}">
@@ -258,29 +264,43 @@
     gap: 9px;
 }
 .trash-button {
-    display: inline-flex;
+    position: relative;
+    display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
     border: 1px solid #e6e6ec;
-    border-radius: 20px;
+    border-radius: 50%;
     background: #fff;
-    color: #777784;
-    padding: 9px 14px;
-    font-size: 12px;
-    font-weight: 650;
+    color: #92929f;
+    padding: 0;
     cursor: pointer;
 }
+.trash-button:hover {
+    border-color: #d9d9e2;
+    background: #f8f8fa;
+    color: #6f6f7c;
+}
+.trash-button svg {
+    width: 17px;
+    height: 17px;
+}
 .trash-button span {
+    position: absolute;
+    top: -5px;
+    right: -5px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 19px;
-    height: 19px;
-    padding: 0 5px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
     border-radius: 10px;
-    background: #f0f0f5;
-    color: #8d8d99;
+    background: var(--tappsk-blue);
+    color: #fff;
     font-size: 10px;
+    font-weight: 700;
 }
 .object-board {
     margin-bottom: 30px;
@@ -408,17 +428,22 @@
     margin: 0;
     font-size: 21px;
 }
-.object-section-actions {
+.object-section-controls {
     display: flex;
     align-items: center;
-    gap: 2px;
+    gap: 1px;
     margin-left: auto;
     opacity: 0;
     transition: opacity .15s ease;
 }
-.object-section-header:hover .object-section-actions,
-.object-section-actions:focus-within {
+.object-section-header:hover .object-section-controls,
+.object-section-controls:focus-within {
     opacity: 1;
+}
+.object-section-actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
 }
 .object-section-action {
     width: 28px;
@@ -439,12 +464,6 @@
     color: #aaaab6;
     font-size: 19px;
     cursor: pointer;
-    opacity: 0;
-    transition: opacity .15s ease;
-}
-.object-section-header:hover .object-add-item,
-.object-add-item:focus {
-    opacity: 1;
 }
 .object-section:nth-child(3n + 1) .task-section-label { color: var(--tappsk-blue); }
 .object-section:nth-child(3n + 2) .task-section-label { color: var(--tappsk-cyan); }
@@ -583,11 +602,10 @@
     .objects-page-header { align-items: flex-start; }
     .new-object-button { padding: 9px 13px; }
     .objects-page-actions { gap: 5px; }
-    .trash-button { padding: 8px 10px; }
+    .trash-button { width: 36px; height: 36px; }
     .object-name { font-size: 18px; }
     .object-actions { gap: 2px; }
-    .object-section-actions { opacity: 1; }
-    .object-add-item { opacity: 1; }
+    .object-section-controls { opacity: 1; }
     .object-item-delete { opacity: 1; }
     .object-assignee-avatar.is-empty { opacity: 1; }
     .object-section-header .task-section-label { font-size: 14px; letter-spacing: .5px; }
