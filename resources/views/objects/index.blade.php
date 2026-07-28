@@ -5,17 +5,14 @@
 <div class="objects-page-header">
     <div class="page-title">Объекты</div>
     <div class="objects-page-actions">
+        <button class="new-object-button" type="button" onclick="openObjectModal()">+ Новый объект</button>
         <button class="trash-button" type="button" onclick="openTrashModal()"
             title="Корзина" aria-label="Корзина">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 10v6M14 10v6"/>
             </svg>
-            @if($deletedItems->isNotEmpty())
-                <span>{{ $deletedItems->count() }}</span>
-            @endif
         </button>
-        <button class="new-object-button" type="button" onclick="openObjectModal()">+ Новый объект</button>
     </div>
 </div>
 
@@ -100,6 +97,9 @@
                                             <div class="object-item-comment">{{ $item->comment }}</div>
                                         @endif
                                     </div>
+                                    @if($item->completed_at)
+                                        <span class="object-completed-date">{{ $item->completed_at->format('d.m.Y') }}</span>
+                                    @endif
                                     @if($item->assignee)
                                         @php($assigneeColor = $avatarColors[$item->assigned_to % count($avatarColors)])
                                         <button type="button" class="object-assignee-avatar"
@@ -112,9 +112,6 @@
                                         <button type="button" class="object-assignee-avatar is-empty"
                                             onclick="openAssigneeModal({{ $item->id }}, null)"
                                             title="Назначить ответственного">+</button>
-                                    @endif
-                                    @if($item->completed_at)
-                                        <span class="object-completed-date">{{ $item->completed_at->format('d.m.Y') }}</span>
                                     @endif
                                     <button type="button" class="object-item-delete"
                                         onclick="deleteObjectItem({{ $item->id }})"
@@ -285,22 +282,6 @@
 .trash-button svg {
     width: 17px;
     height: 17px;
-}
-.trash-button span {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 18px;
-    height: 18px;
-    padding: 0 4px;
-    border-radius: 10px;
-    background: var(--tappsk-blue);
-    color: #fff;
-    font-size: 10px;
-    font-weight: 700;
 }
 .object-board {
     margin-bottom: 30px;
@@ -484,9 +465,11 @@
     white-space: pre-wrap;
 }
 .object-completed-date {
-    margin-left: 4px;
+    min-width: 70px;
+    margin-left: auto;
     color: #aaa;
     font-size: 12px;
+    text-align: right;
     white-space: nowrap;
 }
 .object-assignee-avatar {
@@ -496,7 +479,7 @@
     justify-content: center;
     width: 28px;
     height: 28px;
-    margin-left: auto;
+    margin-left: 8px;
     border: 0;
     border-radius: 50%;
     font-size: 10px;
