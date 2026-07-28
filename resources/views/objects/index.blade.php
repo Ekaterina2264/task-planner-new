@@ -129,6 +129,14 @@
     @endforelse
 </div>
 
+@if($objects->count() > 1)
+    <div class="objects-nav">
+        <button type="button" class="objects-nav-previous" onclick="scrollToObject(-1)"
+            title="Предыдущий объект" aria-label="Предыдущий объект">↑</button>
+        <button type="button" class="objects-nav-next" onclick="scrollToObject(1)">Следующий объект ↓</button>
+    </div>
+@endif
+
 <div id="trash-modal" class="modal-backdrop" style="display:none" onclick="closeTrashModal(event)">
     <div class="modal trash-modal" onclick="event.stopPropagation()">
         <div class="modal-title">Корзина</div>
@@ -297,6 +305,7 @@
 }
 .object-board {
     margin-bottom: 30px;
+    scroll-margin-top: 24px;
 }
 .object-board-header {
     display: flex;
@@ -616,6 +625,37 @@
     font-size: 13px;
     text-align: center;
 }
+.objects-nav {
+    position: fixed;
+    right: 36px;
+    bottom: 28px;
+    z-index: 70;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.objects-nav button {
+    border: 0;
+    background: var(--tappsk-blue);
+    color: #fff;
+    box-shadow: 0 4px 18px rgba(124, 111, 247, .3);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 650;
+}
+.objects-nav-previous {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+.objects-nav-next {
+    height: 40px;
+    padding: 0 17px;
+    border-radius: 20px;
+}
+.objects-nav button:hover {
+    filter: brightness(.96);
+}
 @media (max-width: 768px) {
     .objects-page-header { align-items: flex-start; }
     .new-object-button { padding: 9px 13px; }
@@ -627,6 +667,7 @@
     .object-item-delete { opacity: 1; }
     .object-assignee-avatar.is-empty { opacity: 1; }
     .object-section-header .task-section-label { font-size: 14px; letter-spacing: .5px; }
+    .objects-nav { right: 18px; bottom: 18px; }
 }
 </style>
 
@@ -898,6 +939,17 @@ function toggleObject(objectId) {
     if (collapsed) stored.add(objectId);
     else stored.delete(objectId);
     localStorage.setItem('collapsed-objects', JSON.stringify([...stored]));
+}
+
+function scrollToObject(direction) {
+    const boards = [...document.querySelectorAll('.object-board')];
+    if (!boards.length) return;
+
+    let currentIndex = boards.findIndex(board => board.getBoundingClientRect().bottom > 120);
+    if (currentIndex < 0) currentIndex = boards.length - 1;
+
+    const targetIndex = (currentIndex + direction + boards.length) % boards.length;
+    boards[targetIndex].scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
