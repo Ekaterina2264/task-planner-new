@@ -3,7 +3,15 @@
 
 <div class="objects-page-header">
     <div class="page-title">Объекты</div>
-    <button class="new-object-button" type="button" onclick="openObjectModal()">+ Новый объект</button>
+    <div class="objects-page-actions">
+        <button class="trash-button" type="button" onclick="openTrashModal()">
+            Корзина
+            @if($deletedItems->isNotEmpty())
+                <span>{{ $deletedItems->count() }}</span>
+            @endif
+        </button>
+        <button class="new-object-button" type="button" onclick="openObjectModal()">+ Новый объект</button>
+    </div>
 </div>
 
 <div class="objects-list">
@@ -24,6 +32,10 @@
                         data-name="{{ $object->name }}"
                         onclick="openRenameObjectModal({{ $object->id }}, this.dataset.name)"
                         title="Переименовать объект">✎</button>
+                    <button class="object-action-button object-delete-button" type="button"
+                        data-name="{{ $object->name }}"
+                        onclick="deleteObject({{ $object->id }}, this.dataset.name)"
+                        title="Удалить объект">×</button>
                     <button class="object-new-section" type="button"
                         onclick="openSectionModal({{ $object->id }})">+ Раздел</button>
                 </div>
@@ -86,15 +98,23 @@
                 @endforeach
             </div>
 
-            @if($object->deletedItems->isNotEmpty())
-                <details class="object-trash">
-                    <summary>
-                        Удалённые пункты
-                        <span class="object-trash-count">{{ $object->deletedItems->count() }}</span>
-                    </summary>
-                    <div class="object-trash-items">
-                        @foreach($object->deletedItems as $item)
-                            @php($sectionName = $object->sections->firstWhere('key', $item->section)?->name ?? 'Удалённый раздел')
+        </section>
+    @empty
+        <div class="empty-state">Объектов пока нет</div>
+    @endforelse
+</div>
+
+<div id="trash-modal" class="modal-backdrop" style="display:none" onclick="closeTrashModal(event)">
+    <div class="modal trash-modal" onclick="event.stopPropagation()">
+        <div class="modal-title">Корзина</div>
+        <div class="trash-modal-list">
+            @forelse($deletedItems->groupBy('work_object_id') as $objectItems)
+                @php($deletedObject = $objectItems->first()->workObject)
+                @if($deletedObject)
+                    <div class="trash-object-group">
+                        <div class="trash-object-name">{{ $deletedObject->name }}</div>
+                        @foreach($objectItems as $item)
+                            @php($sectionName = $deletedObject->sections->firstWhere('key', $item->section)?->name ?? 'Удалённый раздел')
                             <div class="object-trash-item">
                                 <div class="object-trash-item-content">
                                     <span class="object-trash-item-title">{{ $item->title }}</span>
@@ -105,12 +125,13 @@
                             </div>
                         @endforeach
                     </div>
-                </details>
-            @endif
-        </section>
-    @empty
-        <div class="empty-state">Объектов пока нет</div>
-    @endforelse
+                @endif
+            @empty
+                <div class="trash-empty">Удалённых пунктов нет</div>
+            @endforelse
+        </div>
+        <button type="button" class="btn-cancel" onclick="closeTrashModal()">Закрыть</button>
+    </div>
 </div>
 
 <div id="object-modal" class="modal-backdrop" style="display:none" onclick="closeObjectModal(event)">
@@ -183,6 +204,36 @@
     font-weight: 650;
     cursor: pointer;
 }
+.objects-page-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+.trash-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid #e6e6ec;
+    border-radius: 20px;
+    background: #fff;
+    color: #777784;
+    padding: 9px 14px;
+    font-size: 12px;
+    font-weight: 650;
+    cursor: pointer;
+}
+.trash-button span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 19px;
+    height: 19px;
+    padding: 0 5px;
+    border-radius: 10px;
+    background: #f0f0f5;
+    color: #8d8d99;
+    font-size: 10px;
+}
 .object-board {
     margin-bottom: 30px;
 }
@@ -233,6 +284,13 @@
     height: 30px;
     border-radius: 50%;
     font-size: 17px;
+}
+.object-delete-button {
+    font-size: 20px;
+}
+.object-delete-button:hover {
+    color: #e05d68;
+    background: #fff1f2;
 }
 .object-new-section {
     border: 1px solid #e6e6ec;
@@ -342,33 +400,24 @@
     color: #e05d68;
     background: #fff1f2;
 }
-.object-trash {
-    margin-top: 18px;
-    border-top: 1px solid #f0f0f4;
-    color: #92929e;
+.trash-modal {
+    width: min(560px, calc(100vw - 32px));
+    max-height: min(680px, calc(100vh - 40px));
+    overflow-y: auto;
 }
-.object-trash summary {
-    width: fit-content;
-    padding: 12px 0 4px;
-    font-size: 12px;
-    font-weight: 650;
-    cursor: pointer;
-    user-select: none;
+.trash-modal-list {
+    margin: 2px 0 14px;
 }
-.object-trash-count {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 20px;
-    height: 20px;
-    margin-left: 5px;
-    padding: 0 6px;
-    border-radius: 10px;
-    background: #f3f3f7;
-    font-size: 11px;
+.trash-object-group + .trash-object-group {
+    margin-top: 17px;
+    padding-top: 17px;
+    border-top: 1px solid #eeeeF3;
 }
-.object-trash-items {
-    padding: 5px 0 2px;
+.trash-object-name {
+    margin-bottom: 5px;
+    color: #25253a;
+    font-size: 14px;
+    font-weight: 700;
 }
 .object-trash-item {
     display: flex;
@@ -404,9 +453,17 @@
     font-weight: 650;
     cursor: pointer;
 }
+.trash-empty {
+    padding: 20px 0;
+    color: #aaaab6;
+    font-size: 13px;
+    text-align: center;
+}
 @media (max-width: 768px) {
     .objects-page-header { align-items: flex-start; }
     .new-object-button { padding: 9px 13px; }
+    .objects-page-actions { gap: 5px; }
+    .trash-button { padding: 8px 10px; }
     .object-name { font-size: 18px; }
     .object-actions { gap: 2px; }
     .object-new-section { padding: 6px 8px; }
@@ -430,6 +487,16 @@ function openObjectModal() {
 function closeObjectModal(event) {
     if (!event || event.target === document.getElementById('object-modal')) {
         document.getElementById('object-modal').style.display = 'none';
+    }
+}
+
+function openTrashModal() {
+    document.getElementById('trash-modal').style.display = 'flex';
+}
+
+function closeTrashModal(event) {
+    if (!event || event.target === document.getElementById('trash-modal')) {
+        document.getElementById('trash-modal').style.display = 'none';
     }
 }
 
@@ -513,6 +580,19 @@ async function renameObject() {
 
     if (response.ok) window.location.reload();
     else alert('Не удалось переименовать объект. Попробуйте ещё раз.');
+}
+
+async function deleteObject(objectId, objectName) {
+    const message = `Удалить объект «${objectName}»? Все его разделы и пункты будут удалены окончательно.`;
+    if (!confirm(message)) return;
+
+    const response = await fetch(`/objects/${objectId}`, {
+        method: 'DELETE',
+        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+    });
+
+    if (response.ok) window.location.reload();
+    else alert('Не удалось удалить объект. Попробуйте ещё раз.');
 }
 
 async function saveSection() {
@@ -626,6 +706,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 document.addEventListener('keydown', event => {
     if (event.key === 'Escape') {
+        closeTrashModal();
         closeObjectModal();
         closeRenameObjectModal();
         closeSectionModal();
