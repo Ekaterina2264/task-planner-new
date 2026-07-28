@@ -76,9 +76,10 @@ class WorkObjectController extends Controller
     public function destroySection(ObjectSection $objectSection)
     {
         DB::transaction(function () use ($objectSection) {
-            ObjectItem::where('work_object_id', $objectSection->work_object_id)
+            ObjectItem::withTrashed()
+                ->where('work_object_id', $objectSection->work_object_id)
                 ->where('section', $objectSection->key)
-                ->delete();
+                ->forceDelete();
 
             $objectSection->delete();
         });
@@ -119,5 +120,27 @@ class WorkObjectController extends Controller
         ]);
 
         return response()->json($objectItem->fresh());
+    }
+
+    public function destroyItem(ObjectItem $objectItem)
+    {
+        $objectItem->delete();
+
+        return response()->noContent();
+    }
+
+    public function restoreItem(int $objectItem)
+    {
+        $item = ObjectItem::onlyTrashed()->findOrFail($objectItem);
+
+        $sectionExists = ObjectSection::where('work_object_id', $item->work_object_id)
+            ->where('key', $item->section)
+            ->exists();
+
+        abort_unless($sectionExists, 422, 'Раздел этого пункта больше не существует.');
+
+        $item->restore();
+
+        return response()->json($item->fresh());
     }
 }
