@@ -6,15 +6,16 @@
 </div>
 
 <div class="history-list">
-    @forelse($activities->groupBy(fn ($activity) => $activity->created_at->format('Y-m-d')) as $date => $dayActivities)
+    @php($historyTimezone = 'Asia/Yekaterinburg')
+    @forelse($activities->groupBy(fn ($activity) => $activity->created_at->copy()->timezone($historyTimezone)->format('Y-m-d')) as $date => $dayActivities)
         <section class="history-day">
             <div class="history-date">
-                @if($date === now()->format('Y-m-d'))
+                @if($date === now($historyTimezone)->format('Y-m-d'))
                     Сегодня
-                @elseif($date === now()->subDay()->format('Y-m-d'))
+                @elseif($date === now($historyTimezone)->subDay()->format('Y-m-d'))
                     Вчера
                 @else
-                    {{ $dayActivities->first()->created_at->format('d.m.Y') }}
+                    {{ $dayActivities->first()->created_at->copy()->timezone($historyTimezone)->format('d.m.Y') }}
                 @endif
             </div>
 
@@ -26,7 +27,7 @@
                     <div class="history-entry-content">
                         <div class="history-entry-top">
                             <span class="history-user">{{ $activity->user?->name ?? 'Удалённый пользователь' }}</span>
-                            <span class="history-time">{{ $activity->created_at->format('H:i') }}</span>
+                            <span class="history-time">{{ $activity->created_at->copy()->timezone($historyTimezone)->format('H:i') }}</span>
                         </div>
                         <div class="history-description">{{ $activity->description }}</div>
                         @if($activity->context)
