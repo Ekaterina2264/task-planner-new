@@ -8,6 +8,7 @@ use Carbon\Carbon;
 class Task extends Model
 {
     protected $fillable = [
+        'object_item_id',
         'title',
         'assigned_to',
         'created_by',
@@ -30,6 +31,11 @@ class Task extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function objectItem()
+    {
+        return $this->belongsTo(ObjectItem::class);
     }
 
     public function isOverdue(): bool
