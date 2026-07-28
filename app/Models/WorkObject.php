@@ -16,6 +16,13 @@ class WorkObject extends Model
             ->orderBy('created_at');
     }
 
+    public function deletedItems()
+    {
+        return $this->hasMany(ObjectItem::class)
+            ->onlyTrashed()
+            ->orderByDesc('deleted_at');
+    }
+
     public function sections()
     {
         return $this->hasMany(ObjectSection::class)
