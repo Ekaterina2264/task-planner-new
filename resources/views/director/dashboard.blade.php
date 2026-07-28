@@ -1,10 +1,6 @@
 @extends('layouts.app')
 @section('content')
 
-<div class="page-header">
-    <div class="page-title">Команда</div>
-</div>
-
 @if($objects->isNotEmpty())
     <div class="team-objects" aria-label="Объекты">
         @foreach($objects as $object)
@@ -106,7 +102,7 @@
 .team-objects {
     display: flex;
     gap: 16px;
-    margin-top: 22px;
+    margin-top: 0;
     padding: 2px 0 12px;
     overflow-x: auto;
     scrollbar-width: none;
