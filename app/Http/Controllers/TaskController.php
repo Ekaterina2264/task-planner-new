@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -19,7 +20,7 @@ class TaskController extends Controller
             'due_date'    => ['nullable', 'date', 'required_if:timing,date'],
         ]);
 
-        Task::create([
+        $task = Task::create([
             'title'       => $request->title,
             'assigned_to' => $request->assigned_to,
             'created_by'  => auth()->id(),
@@ -29,6 +30,12 @@ class TaskController extends Controller
             'status'      => 'new',
             'comment'     => $request->comment,
         ]);
+
+        ActivityLog::record(
+            'task.created',
+            "Создана задача «{$task->title}»",
+            'Ответственный: ' . $task->assignee()->value('name')
+        );
 
         return response()->json(['success' => true]);
     }
@@ -43,6 +50,9 @@ class TaskController extends Controller
             'due_date' => ['nullable', 'date'],
             'comment'  => ['nullable', 'string'],
         ]);
+
+        $originalStatus = $task->status;
+        $originalTitle = $task->title;
 
         DB::transaction(function () use ($request, $task) {
             $task->update($request->only('status', 'title', 'priority', 'timing', 'due_date', 'comment'));
@@ -71,6 +81,21 @@ class TaskController extends Controller
                 $task->objectItem()->update($itemUpdates);
             }
         });
+
+        if ($request->has('status') && $request->status !== $originalStatus) {
+            ActivityLog::record(
+                $request->status === 'done' ? 'task.completed' : 'task.reopened',
+                ($request->status === 'done' ? 'Выполнена задача ' : 'Возвращена задача ') . "«{$task->fresh()->title}»"
+            );
+        } elseif ($request->has('title') && $request->title !== $originalTitle) {
+            ActivityLog::record(
+                'task.renamed',
+                "Задача «{$originalTitle}» переименована",
+                "Новое название: {$request->title}"
+            );
+        } elseif ($task->wasChanged()) {
+            ActivityLog::record('task.updated', "Изменена задача «{$task->fresh()->title}»");
+        }
 
         return response()->json(['success' => true]);
     }
