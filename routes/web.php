@@ -31,6 +31,7 @@ Route::middleware(['auth'])->group(function () {
         }
 
         $allTasks = \App\Models\Task::where('assigned_to', $user->id)
+            ->with('objectItem.workObject')
             ->orderByRaw("CASE priority WHEN 'high' THEN 0 WHEN 'medium' THEN 1 ELSE 2 END")
             ->get();
         $tasks = $allTasks->where('status', 'new');
