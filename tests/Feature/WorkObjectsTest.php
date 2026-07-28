@@ -127,3 +127,36 @@ test('completed object items keep their completion date', function () {
 
     expect($item->fresh()->completed_at)->not->toBeNull();
 });
+
+test('users can delete and restore object items', function () {
+    $user = User::factory()->create();
+    $object = WorkObject::create([
+        'name' => 'Жилой комплекс',
+        'created_by' => $user->id,
+    ]);
+    $object->sections()->create([
+        'key' => 'documents',
+        'name' => 'Документы',
+        'position' => 0,
+    ]);
+    $item = ObjectItem::create([
+        'work_object_id' => $object->id,
+        'section' => 'documents',
+        'title' => 'Подписать договор',
+        'created_by' => $user->id,
+    ]);
+
+    $this->actingAs($user)
+        ->deleteJson(route('object-items.destroy', $item))
+        ->assertNoContent();
+
+    expect($item->fresh())->toBeNull();
+    expect(ObjectItem::onlyTrashed()->find($item->id))->not->toBeNull();
+
+    $this->actingAs($user)
+        ->patchJson(route('object-items.restore', $item->id))
+        ->assertOk()
+        ->assertJsonPath('title', 'Подписать договор');
+
+    expect($item->fresh())->not->toBeNull();
+});
