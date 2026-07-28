@@ -18,7 +18,7 @@ Route::middleware(['auth'])->group(function () {
         }
 
         if (request('view') === 'objects') {
-            $objects = WorkObject::with(['items', 'sections'])->orderBy('name')->get();
+            $objects = WorkObject::with(['items', 'deletedItems', 'sections'])->orderBy('name')->get();
 
             return view('objects.index', compact('objects'));
         }
@@ -70,6 +70,8 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/object-sections/{objectSection}', [WorkObjectController::class, 'destroySection'])->name('object-sections.destroy');
     Route::post('/objects/{workObject}/items', [WorkObjectController::class, 'storeItem'])->name('objects.items.store');
     Route::patch('/object-items/{objectItem}', [WorkObjectController::class, 'updateItem'])->name('object-items.update');
+    Route::delete('/object-items/{objectItem}', [WorkObjectController::class, 'destroyItem'])->name('object-items.destroy');
+    Route::patch('/object-items/{objectItem}/restore', [WorkObjectController::class, 'restoreItem'])->name('object-items.restore');
 
     
 
