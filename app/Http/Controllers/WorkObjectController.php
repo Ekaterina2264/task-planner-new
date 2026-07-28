@@ -47,6 +47,13 @@ class WorkObjectController extends Controller
         return response()->json($workObject->fresh());
     }
 
+    public function destroy(WorkObject $workObject)
+    {
+        $workObject->delete();
+
+        return response()->noContent();
+    }
+
     public function storeSection(Request $request, WorkObject $workObject)
     {
         $validated = $request->validate([
