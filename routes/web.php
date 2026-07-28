@@ -17,7 +17,12 @@ Route::middleware(['auth'])->group(function () {
         $user = auth()->user();
 
         if (request('view') === 'team') {
-            return view('director.dashboard');
+            $objects = WorkObject::withCount([
+                'items as active_items_count' => fn ($query) => $query->where('is_completed', false),
+                'items',
+            ])->orderBy('name')->get();
+
+            return view('director.dashboard', compact('objects'));
         }
 
         if (request('view') === 'objects') {
