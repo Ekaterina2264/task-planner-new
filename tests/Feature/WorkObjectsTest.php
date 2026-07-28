@@ -56,6 +56,33 @@ test('users can rename objects', function () {
     expect($object->fresh()->name)->toBe('Новое название');
 });
 
+test('users can delete objects with their sections and items', function () {
+    $user = User::factory()->create();
+    $object = WorkObject::create([
+        'name' => 'Жилой комплекс',
+        'created_by' => $user->id,
+    ]);
+    $section = $object->sections()->create([
+        'key' => 'documents',
+        'name' => 'Документы',
+        'position' => 0,
+    ]);
+    $item = ObjectItem::create([
+        'work_object_id' => $object->id,
+        'section' => 'documents',
+        'title' => 'Подписать договор',
+        'created_by' => $user->id,
+    ]);
+
+    $this->actingAs($user)
+        ->deleteJson(route('objects.destroy', $object))
+        ->assertNoContent();
+
+    expect($object->fresh())->toBeNull();
+    expect($section->fresh())->toBeNull();
+    expect(ObjectItem::withTrashed()->find($item->id))->toBeNull();
+});
+
 test('users can create rename and delete object sections', function () {
     $user = User::factory()->create();
     $object = WorkObject::create([
