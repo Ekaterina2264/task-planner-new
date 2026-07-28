@@ -29,16 +29,19 @@
                     <div class="object-count">{{ $object->items->where('is_completed', false)->count() }} активных пунктов</div>
                 </div>
                 <div class="object-actions">
-                    <button class="object-action-button" type="button"
-                        data-name="{{ $object->name }}"
-                        onclick="openRenameObjectModal({{ $object->id }}, this.dataset.name)"
-                        title="Переименовать объект">✎</button>
-                    <button class="object-action-button object-delete-button" type="button"
-                        data-name="{{ $object->name }}"
-                        onclick="deleteObject({{ $object->id }}, this.dataset.name)"
-                        title="Удалить объект">×</button>
-                    <button class="object-new-section" type="button"
-                        onclick="openSectionModal({{ $object->id }})">+ Раздел</button>
+                    <div class="object-menu">
+                        <button class="object-menu-toggle" type="button"
+                            onclick="toggleObjectMenu(event, {{ $object->id }})"
+                            title="Действия с объектом" aria-label="Действия с объектом">•••</button>
+                        <div class="object-menu-dropdown" id="object-menu-{{ $object->id }}" hidden>
+                            <button type="button" data-name="{{ $object->name }}"
+                                onclick="openRenameObjectModal({{ $object->id }}, this.dataset.name)">Переименовать</button>
+                            <button type="button"
+                                onclick="openSectionModal({{ $object->id }})">Добавить раздел</button>
+                            <button type="button" class="is-danger" data-name="{{ $object->name }}"
+                                onclick="deleteObject({{ $object->id }}, this.dataset.name)">Удалить объект</button>
+                        </div>
+                    </div>
                 </div>
                 <button class="object-collapse" type="button" onclick="toggleObject({{ $object->id }})"
                     title="Свернуть объект" aria-label="Свернуть объект" aria-expanded="true">
@@ -315,38 +318,64 @@
     display: flex;
     flex-shrink: 0;
     align-items: center;
-    gap: 7px;
     margin-left: auto;
 }
-.object-action-button,
 .object-section-action {
     border: 0;
     background: transparent;
     color: #aaaab6;
     cursor: pointer;
 }
-.object-action-button {
-    width: 30px;
-    height: 30px;
+.object-menu {
+    position: relative;
+}
+.object-menu-toggle {
+    width: 34px;
+    height: 34px;
+    border: 0;
     border-radius: 50%;
-    font-size: 17px;
-}
-.object-delete-button {
-    font-size: 20px;
-}
-.object-delete-button:hover {
-    color: #e05d68;
-    background: #fff1f2;
-}
-.object-new-section {
-    border: 1px solid #e6e6ec;
-    border-radius: 16px;
-    background: #fff;
-    color: #777784;
-    padding: 6px 11px;
-    font-size: 12px;
-    font-weight: 650;
+    background: transparent;
+    color: #aaaab6;
+    font-size: 15px;
+    letter-spacing: 1px;
     cursor: pointer;
+}
+.object-menu-toggle:hover,
+.object-menu-toggle[aria-expanded="true"] {
+    background: #f5f5f8;
+    color: #777784;
+}
+.object-menu-dropdown {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% + 4px);
+    right: 0;
+    width: 168px;
+    padding: 5px;
+    border: 1px solid #ececf1;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(27, 27, 45, .1);
+}
+.object-menu-dropdown button {
+    width: 100%;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: #555563;
+    padding: 8px 9px;
+    font-size: 12px;
+    text-align: left;
+    cursor: pointer;
+}
+.object-menu-dropdown button:hover {
+    background: #f5f5f8;
+}
+.object-menu-dropdown button.is-danger {
+    color: #d95763;
+}
+.object-menu-dropdown button.is-danger:hover {
+    background: #fff1f2;
 }
 .object-collapse {
     flex: 0 0 34px;
@@ -370,14 +399,14 @@
 .object-collapse.is-collapsed svg {
     transform: rotate(180deg);
 }
-.object-section { margin-top: 11px; }
+.object-section { margin-top: 8px; }
 .object-section-header {
     display: flex;
     align-items: center;
 }
 .object-section-header .task-section-label {
     margin: 0;
-    font-size: 25px;
+    font-size: 21px;
 }
 .object-section-actions {
     display: flex;
@@ -410,6 +439,12 @@
     color: #aaaab6;
     font-size: 19px;
     cursor: pointer;
+    opacity: 0;
+    transition: opacity .15s ease;
+}
+.object-section-header:hover .object-add-item,
+.object-add-item:focus {
+    opacity: 1;
 }
 .object-section:nth-child(3n + 1) .task-section-label { color: var(--tappsk-blue); }
 .object-section:nth-child(3n + 2) .task-section-label { color: var(--tappsk-cyan); }
@@ -456,6 +491,12 @@
     color: #b1b1bc;
     font-size: 16px;
     font-weight: 400;
+    opacity: 0;
+    transition: opacity .15s ease;
+}
+.object-item:hover .object-assignee-avatar.is-empty,
+.object-assignee-avatar.is-empty:focus {
+    opacity: 1;
 }
 .object-item-delete {
     width: 28px;
@@ -545,9 +586,10 @@
     .trash-button { padding: 8px 10px; }
     .object-name { font-size: 18px; }
     .object-actions { gap: 2px; }
-    .object-new-section { padding: 6px 8px; }
     .object-section-actions { opacity: 1; }
+    .object-add-item { opacity: 1; }
     .object-item-delete { opacity: 1; }
+    .object-assignee-avatar.is-empty { opacity: 1; }
     .object-section-header .task-section-label { font-size: 14px; letter-spacing: .5px; }
 }
 </style>
@@ -568,6 +610,23 @@ function closeObjectModal(event) {
     if (!event || event.target === document.getElementById('object-modal')) {
         document.getElementById('object-modal').style.display = 'none';
     }
+}
+
+function closeObjectMenus(exceptId = null) {
+    document.querySelectorAll('.object-menu-dropdown').forEach(menu => {
+        if (menu.id === `object-menu-${exceptId}`) return;
+        menu.hidden = true;
+        menu.previousElementSibling?.setAttribute('aria-expanded', 'false');
+    });
+}
+
+function toggleObjectMenu(event, objectId) {
+    event.stopPropagation();
+    const menu = document.getElementById(`object-menu-${objectId}`);
+    const willOpen = menu.hidden;
+    closeObjectMenus(objectId);
+    menu.hidden = !willOpen;
+    event.currentTarget.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
 }
 
 function openTrashModal() {
@@ -818,8 +877,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+document.addEventListener('click', () => closeObjectMenus());
+
 document.addEventListener('keydown', event => {
     if (event.key === 'Escape') {
+        closeObjectMenus();
         closeTrashModal();
         closeObjectModal();
         closeRenameObjectModal();
