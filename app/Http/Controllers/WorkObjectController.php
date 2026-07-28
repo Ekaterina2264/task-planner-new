@@ -99,6 +99,7 @@ class WorkObjectController extends Controller
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'comment' => ['nullable', 'string'],
+            'assigned_to' => ['nullable', 'exists:users,id'],
             'section' => [
                 'required',
                 'string',
@@ -127,6 +128,17 @@ class WorkObjectController extends Controller
         ]);
 
         return response()->json($objectItem->fresh());
+    }
+
+    public function assignItem(Request $request, ObjectItem $objectItem)
+    {
+        $validated = $request->validate([
+            'assigned_to' => ['nullable', 'exists:users,id'],
+        ]);
+
+        $objectItem->update($validated);
+
+        return response()->json($objectItem->fresh()->load('assignee'));
     }
 
     public function destroyItem(ObjectItem $objectItem)
