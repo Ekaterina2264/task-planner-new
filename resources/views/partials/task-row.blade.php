@@ -19,6 +19,11 @@
 
     <div style="flex:1;cursor:pointer;" onclick="if (window.personalSuppressClickUntil && Date.now() < window.personalSuppressClickUntil) return; openEditModal({{ $task->id }}, '{{ addslashes($task->title) }}', '{{ $task->priority }}', '{{ $task->timing }}', '{{ $task->due_date?->format('Y-m-d') }}', '{{ addslashes($task->comment ?? '') }}')">
         <span class="task-title" :class="{ 'done': done }">{{ $task->title }}</span>
+        @if($task->objectItem?->workObject)
+            <div style="font-size:11px;color:var(--tappsk-blue);margin-top:3px;">
+                Объект: {{ $task->objectItem->workObject->name }}
+            </div>
+        @endif
         @if($task->comment)
             <div style="font-size:12px;color:#aaa;margin-top:3px;">{{ $task->comment }}</div>
         @endif
