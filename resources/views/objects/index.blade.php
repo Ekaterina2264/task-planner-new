@@ -15,29 +15,40 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-2M9 9v.01M9 13v.01M9 17v.01M16 13v.01M16 17v.01"/>
                     </svg>
                 </div>
-                <div>
+                <div class="object-heading">
                     <div class="object-name">{{ $object->name }}</div>
                     <div class="object-count">{{ $object->items->where('is_completed', false)->count() }} активных пунктов</div>
+                </div>
+                <div class="object-actions">
+                    <button class="object-action-button" type="button"
+                        onclick='openRenameObjectModal({{ $object->id }}, @js($object->name))'
+                        title="Переименовать объект">✎</button>
+                    <button class="object-new-section" type="button"
+                        onclick="openSectionModal({{ $object->id }})">+ Раздел</button>
                 </div>
                 <button class="object-collapse" type="button" onclick="toggleObject({{ $object->id }})"
                     title="Свернуть объект" aria-label="Свернуть объект" aria-expanded="true">⌃</button>
             </div>
 
             <div class="object-sections" id="object-sections-{{ $object->id }}">
-                @foreach([
-                    'documents' => 'Документы',
-                    'crew' => 'Задачи для выхода монтажной бригады',
-                    'materials' => 'Материалы',
-                ] as $sectionKey => $sectionTitle)
-                    @php($items = $object->items->where('section', $sectionKey))
+                @foreach($object->sections as $section)
+                    @php($items = $object->items->where('section', $section->key))
                     <div class="object-section">
                         <div class="object-section-header">
                             <div class="task-section-label">
-                                {{ $sectionTitle }}
+                                {{ $section->name }}
                                 <span class="task-section-count task-progress-count">{{ $items->where('is_completed', true)->count() }}/{{ $items->count() }}</span>
                             </div>
+                            <div class="object-section-actions">
+                                <button type="button" class="object-section-action"
+                                    onclick='openSectionModal({{ $object->id }}, {{ $section->id }}, @js($section->name))'
+                                    title="Переименовать раздел">✎</button>
+                                <button type="button" class="object-section-action object-section-delete"
+                                    onclick='deleteSection({{ $section->id }}, @js($section->name), {{ $items->count() }})'
+                                    title="Удалить раздел">×</button>
+                            </div>
                             <button type="button" class="object-add-item"
-                                onclick="openItemModal({{ $object->id }}, '{{ $sectionKey }}', '{{ $sectionTitle }}')"
+                                onclick='openItemModal({{ $object->id }}, @js($section->key), @js($section->name))'
                                 title="Добавить пункт">+</button>
                         </div>
 
@@ -81,6 +92,30 @@
         </div>
         <button type="button" class="btn-submit" onclick="createObject()">Создать объект</button>
         <button type="button" class="btn-cancel" onclick="closeObjectModal()">Отмена</button>
+    </div>
+</div>
+
+<div id="rename-object-modal" class="modal-backdrop" style="display:none" onclick="closeRenameObjectModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-title">Переименовать объект</div>
+        <div class="form-group">
+            <label class="form-label">Название объекта</label>
+            <input type="text" id="rename-object-name" class="form-input" placeholder="Введите название">
+        </div>
+        <button type="button" class="btn-submit" onclick="renameObject()">Сохранить</button>
+        <button type="button" class="btn-cancel" onclick="closeRenameObjectModal()">Отмена</button>
+    </div>
+</div>
+
+<div id="section-modal" class="modal-backdrop" style="display:none" onclick="closeSectionModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-title" id="section-modal-title">Новый раздел</div>
+        <div class="form-group">
+            <label class="form-label">Название раздела</label>
+            <input type="text" id="section-name" class="form-input" placeholder="Например, Сметы">
+        </div>
+        <button type="button" class="btn-submit" id="section-submit" onclick="saveSection()">Добавить</button>
+        <button type="button" class="btn-cancel" onclick="closeSectionModal()">Отмена</button>
     </div>
 </div>
 
@@ -144,15 +179,45 @@
     font-size: 18px;
     font-weight: 650;
 }
+.object-heading { min-width: 0; }
 .object-count {
     color: #999;
     font-size: 12px;
     margin-top: 2px;
 }
+.object-actions {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-left: auto;
+}
+.object-action-button,
+.object-section-action {
+    border: 0;
+    background: transparent;
+    color: #aaaab6;
+    cursor: pointer;
+}
+.object-action-button {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    font-size: 17px;
+}
+.object-new-section {
+    border: 1px solid #e6e6ec;
+    border-radius: 16px;
+    background: #fff;
+    color: #777784;
+    padding: 6px 11px;
+    font-size: 12px;
+    font-weight: 650;
+    cursor: pointer;
+}
 .object-collapse {
     width: 34px;
     height: 34px;
-    margin-left: auto;
+    margin-left: 2px;
     border: 0;
     border-radius: 50%;
     background: transparent;
@@ -169,10 +234,31 @@
     margin: 0;
     font-size: 25px;
 }
+.object-section-actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: auto;
+    opacity: 0;
+    transition: opacity .15s ease;
+}
+.object-section-header:hover .object-section-actions,
+.object-section-actions:focus-within {
+    opacity: 1;
+}
+.object-section-action {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 15px;
+}
+.object-section-delete {
+    font-size: 20px;
+}
 .object-add-item {
     width: 30px;
     height: 30px;
-    margin-left: auto;
+    margin-left: 2px;
     border: 0;
     border-radius: 50%;
     background: transparent;
@@ -180,9 +266,9 @@
     font-size: 19px;
     cursor: pointer;
 }
-.object-section:nth-child(1) .task-section-label { color: var(--tappsk-blue); }
-.object-section:nth-child(2) .task-section-label { color: var(--tappsk-cyan); }
-.object-section:nth-child(3) .task-section-label { color: var(--tappsk-muted); }
+.object-section:nth-child(3n + 1) .task-section-label { color: var(--tappsk-blue); }
+.object-section:nth-child(3n + 2) .task-section-label { color: var(--tappsk-cyan); }
+.object-section:nth-child(3n) .task-section-label { color: var(--tappsk-muted); }
 .object-items { min-height: 18px; margin-top: 3px; }
 .object-item .task-checkbox {
     padding: 0;
@@ -208,6 +294,9 @@
     .objects-page-header { align-items: flex-start; }
     .new-object-button { padding: 9px 13px; }
     .object-name { font-size: 18px; }
+    .object-actions { gap: 2px; }
+    .object-new-section { padding: 6px 8px; }
+    .object-section-actions { opacity: 1; }
     .object-section-header .task-section-label { font-size: 14px; letter-spacing: .5px; }
 }
 </style>
@@ -215,6 +304,8 @@
 <script>
 let currentObjectId = null;
 let currentSection = null;
+let editingObjectId = null;
+let editingSectionId = null;
 
 function openObjectModal() {
     document.getElementById('object-modal').style.display = 'flex';
@@ -224,6 +315,44 @@ function openObjectModal() {
 function closeObjectModal(event) {
     if (!event || event.target === document.getElementById('object-modal')) {
         document.getElementById('object-modal').style.display = 'none';
+    }
+}
+
+function openRenameObjectModal(objectId, objectName) {
+    editingObjectId = objectId;
+    const input = document.getElementById('rename-object-name');
+    input.value = objectName;
+    document.getElementById('rename-object-modal').style.display = 'flex';
+    input.focus();
+    input.select();
+}
+
+function closeRenameObjectModal(event) {
+    if (!event || event.target === document.getElementById('rename-object-modal')) {
+        document.getElementById('rename-object-modal').style.display = 'none';
+        editingObjectId = null;
+    }
+}
+
+function openSectionModal(objectId, sectionId = null, sectionName = '') {
+    currentObjectId = objectId;
+    editingSectionId = sectionId;
+    const isEditing = Boolean(sectionId);
+    const input = document.getElementById('section-name');
+    input.value = sectionName;
+    document.getElementById('section-modal-title').textContent = isEditing ? 'Переименовать раздел' : 'Новый раздел';
+    document.getElementById('section-submit').textContent = isEditing ? 'Сохранить' : 'Добавить';
+    document.getElementById('section-modal').style.display = 'flex';
+    input.focus();
+    if (isEditing) input.select();
+}
+
+function closeSectionModal(event) {
+    if (!event || event.target === document.getElementById('section-modal')) {
+        document.getElementById('section-modal').style.display = 'none';
+        currentObjectId = null;
+        editingSectionId = null;
+        document.getElementById('section-name').value = '';
     }
 }
 
@@ -255,6 +384,53 @@ async function createObject() {
 
     if (response.ok) window.location.reload();
     else alert('Не удалось создать объект. Попробуйте ещё раз.');
+}
+
+async function renameObject() {
+    const name = document.getElementById('rename-object-name').value.trim();
+    if (!name || !editingObjectId) return;
+
+    const response = await fetch(`/objects/${editingObjectId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+        body: JSON.stringify({ name }),
+    });
+
+    if (response.ok) window.location.reload();
+    else alert('Не удалось переименовать объект. Попробуйте ещё раз.');
+}
+
+async function saveSection() {
+    const name = document.getElementById('section-name').value.trim();
+    if (!name || (!currentObjectId && !editingSectionId)) return;
+
+    const response = await fetch(
+        editingSectionId ? `/object-sections/${editingSectionId}` : `/objects/${currentObjectId}/sections`,
+        {
+            method: editingSectionId ? 'PATCH' : 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+            body: JSON.stringify({ name }),
+        }
+    );
+
+    if (response.ok) window.location.reload();
+    else alert('Не удалось сохранить раздел. Попробуйте ещё раз.');
+}
+
+async function deleteSection(sectionId, sectionName, itemsCount) {
+    const details = itemsCount
+        ? ` В нём ${itemsCount} пункт(а/ов), они тоже будут удалены.`
+        : '';
+
+    if (!confirm(`Удалить раздел «${sectionName}»?${details}`)) return;
+
+    const response = await fetch(`/object-sections/${sectionId}`, {
+        method: 'DELETE',
+        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+    });
+
+    if (response.ok) window.location.reload();
+    else alert('Не удалось удалить раздел. Попробуйте ещё раз.');
 }
 
 async function createObjectItem() {
@@ -314,6 +490,8 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('keydown', event => {
     if (event.key === 'Escape') {
         closeObjectModal();
+        closeRenameObjectModal();
+        closeSectionModal();
         closeItemModal();
     }
 });
