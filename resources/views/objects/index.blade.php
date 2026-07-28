@@ -18,7 +18,7 @@
 
 <div class="objects-list">
     @forelse($objects as $object)
-        <section class="object-board" data-object-id="{{ $object->id }}">
+        <section class="object-board" id="object-{{ $object->id }}" data-object-id="{{ $object->id }}">
             <div class="object-board-header">
                 <div class="object-icon">
                     <svg width="21" height="21" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -963,6 +963,22 @@ document.addEventListener('DOMContentLoaded', () => {
         button.title = 'Развернуть объект';
         button.setAttribute('aria-expanded', 'false');
     });
+
+    const target = window.location.hash ? document.querySelector(window.location.hash) : null;
+    if (target?.classList.contains('object-board')) {
+        const objectId = Number(target.dataset.objectId);
+        const sections = document.getElementById(`object-sections-${objectId}`);
+        const button = target.querySelector('.object-collapse');
+
+        if (sections && button) {
+            sections.hidden = false;
+            button.classList.remove('is-collapsed');
+            button.title = 'Свернуть объект';
+            button.setAttribute('aria-expanded', 'true');
+        }
+
+        requestAnimationFrame(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    }
 });
 
 document.addEventListener('click', () => closeObjectMenus());
