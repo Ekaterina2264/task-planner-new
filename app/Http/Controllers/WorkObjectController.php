@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ObjectItem;
 use App\Models\ObjectSection;
+use App\Models\Task;
 use App\Models\WorkObject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -113,6 +114,8 @@ class WorkObjectController extends Controller
             'created_by' => auth()->id(),
         ]);
 
+        $this->syncLinkedTask($item);
+
         return response()->json($item, 201);
     }
 
@@ -127,6 +130,8 @@ class WorkObjectController extends Controller
             'completed_at' => $validated['is_completed'] ? now() : null,
         ]);
 
+        $this->syncLinkedTask($objectItem);
+
         return response()->json($objectItem->fresh());
     }
 
@@ -138,11 +143,14 @@ class WorkObjectController extends Controller
 
         $objectItem->update($validated);
 
+        $this->syncLinkedTask($objectItem);
+
         return response()->json($objectItem->fresh()->load('assignee'));
     }
 
     public function destroyItem(ObjectItem $objectItem)
     {
+        $objectItem->linkedTask()->delete();
         $objectItem->delete();
 
         return response()->noContent();
@@ -159,7 +167,40 @@ class WorkObjectController extends Controller
         abort_unless($sectionExists, 422, 'Раздел этого пункта больше не существует.');
 
         $item->restore();
+        $this->syncLinkedTask($item);
 
         return response()->json($item->fresh());
+    }
+
+    private function syncLinkedTask(ObjectItem $item): void
+    {
+        if (! $item->assigned_to) {
+            $item->linkedTask()->delete();
+
+            return;
+        }
+
+        $task = $item->linkedTask;
+        $attributes = [
+            'title' => $item->title,
+            'comment' => $item->comment,
+            'assigned_to' => $item->assigned_to,
+            'status' => $item->is_completed ? 'done' : 'new',
+        ];
+
+        if ($task) {
+            $task->update($attributes);
+
+            return;
+        }
+
+        Task::create([
+            'object_item_id' => $item->id,
+            ...$attributes,
+            'created_by' => $item->created_by,
+            'priority' => 'medium',
+            'timing' => 'later',
+            'due_date' => null,
+        ]);
     }
 }
