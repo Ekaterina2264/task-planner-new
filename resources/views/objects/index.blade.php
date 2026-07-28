@@ -8,7 +8,7 @@
         <button class="new-object-button" type="button" onclick="openObjectModal()">+ Новый объект</button>
         <button class="trash-button" type="button" onclick="openTrashModal()"
             title="Корзина" aria-label="Корзина">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 10v6M14 10v6"/>
             </svg>
@@ -21,7 +21,7 @@
         <section class="object-board" data-object-id="{{ $object->id }}">
             <div class="object-board-header">
                 <div class="object-icon">
-                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <svg width="21" height="21" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-2M9 9v.01M9 13v.01M9 17v.01M16 13v.01M16 17v.01"/>
                     </svg>
                 </div>
@@ -46,7 +46,7 @@
                 </div>
                 <button class="object-collapse" type="button" onclick="toggleObject({{ $object->id }})"
                     title="Свернуть объект" aria-label="Свернуть объект" aria-expanded="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="m6 15 6-6 6 6"/>
                     </svg>
@@ -87,7 +87,7 @@
                                     <button type="button" class="task-checkbox {{ $item->is_completed ? 'checked' : '' }}"
                                         onclick="toggleObjectItem({{ $item->id }}, {{ $item->is_completed ? 'false' : 'true' }})"
                                         aria-label="{{ $item->is_completed ? 'Вернуть пункт' : 'Отметить выполненным' }}">
-                                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                                         </svg>
                                     </button>
@@ -223,7 +223,7 @@
                         <option value="{{ $employee->id }}">{{ $employee->name }}</option>
                     @endforeach
                 </select>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="m8 10 4 4 4-4"/>
                 </svg>
@@ -246,7 +246,7 @@
                         <option value="{{ $employee->id }}">{{ $employee->name }}</option>
                     @endforeach
                 </select>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="m8 10 4 4 4-4"/>
                 </svg>
