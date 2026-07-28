@@ -187,3 +187,30 @@ test('users can delete and restore object items', function () {
 
     expect($item->fresh())->not->toBeNull();
 });
+
+test('users can assign and change an object item assignee', function () {
+    $user = User::factory()->create();
+    $assignee = User::factory()->create(['name' => 'Анна Смирнова']);
+    $object = WorkObject::create([
+        'name' => 'Жилой комплекс',
+        'created_by' => $user->id,
+    ]);
+    $item = ObjectItem::create([
+        'work_object_id' => $object->id,
+        'section' => 'documents',
+        'title' => 'Подписать договор',
+        'created_by' => $user->id,
+    ]);
+
+    $this->actingAs($user)
+        ->patchJson(route('object-items.assignee', $item), ['assigned_to' => $assignee->id])
+        ->assertOk()
+        ->assertJsonPath('assignee.name', 'Анна Смирнова');
+
+    expect($item->fresh()->assigned_to)->toBe($assignee->id);
+
+    $this->actingAs($user)
+        ->patchJson(route('object-items.assignee', $item), ['assigned_to' => null])
+        ->assertOk()
+        ->assertJsonPath('assigned_to', null);
+});
