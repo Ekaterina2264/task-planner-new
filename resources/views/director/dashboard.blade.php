@@ -352,7 +352,11 @@ function groupTasks(tasks, includeDone = false) {
     const tomorrow = localDate(1);
     const weekEnd = localDate(7);
 
-    tasks.filter(task => includeDone || task.status !== 'done').forEach(task => {
+    tasks.filter(task => {
+        if (task.status !== 'done') return true;
+        if (!includeDone || !task.updated_at) return false;
+        return new Date(task.updated_at).toDateString() === new Date().toDateString();
+    }).forEach(task => {
         const dueDate = taskDate(task);
 
         if (task.timing === 'today') {
