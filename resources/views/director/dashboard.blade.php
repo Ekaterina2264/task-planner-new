@@ -355,7 +355,11 @@ function groupTasks(tasks, includeDone = false) {
     tasks.filter(task => includeDone || task.status !== 'done').forEach(task => {
         const dueDate = taskDate(task);
 
-        if (task.timing === 'today') groups.today.push(task);
+        if (task.timing === 'today') {
+            const effectiveDate = dueDate || String(task.created_at || '').slice(0, 10);
+            if (effectiveDate && effectiveDate < today) groups.overdue.push(task);
+            else groups.today.push(task);
+        }
         else if (task.timing === 'later') groups.later.push(task);
         else if (task.timing === 'date' && dueDate) {
             if (dueDate < today) groups.overdue.push(task);
