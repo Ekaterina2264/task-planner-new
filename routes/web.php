@@ -54,10 +54,16 @@ Route::middleware(['auth'])->group(function () {
         $today     = now()->startOfDay();
         $tomorrow  = now()->addDay()->startOfDay();
         $weekEnd   = now()->addDays(7)->startOfDay();
+        $effectiveDueDate = fn($task) => $task->due_date?->copy()->startOfDay()
+            ?? ($task->timing === 'today' ? $task->created_at->copy()->startOfDay() : null);
 
         $allBySection = [
-            'overdue' => $allTasks->filter(fn($t) => $t->timing === 'date' && $t->due_date && $t->due_date->startOfDay()->lt($today)),
-            'today' => $allTasks->filter(fn($t) => $t->timing === 'today' || ($t->timing === 'date' && $t->due_date && $t->due_date->startOfDay()->eq($today))),
+            'overdue' => $allTasks->filter(fn($t) => in_array($t->timing, ['today', 'date'], true)
+                && ($date = $effectiveDueDate($t))
+                && $date->lt($today)),
+            'today' => $allTasks->filter(fn($t) => in_array($t->timing, ['today', 'date'], true)
+                && ($date = $effectiveDueDate($t))
+                && $date->eq($today)),
             'tomorrow' => $allTasks->filter(fn($t) => $t->timing === 'date' && $t->due_date && $t->due_date->startOfDay()->eq($tomorrow)),
             'week' => $allTasks->filter(fn($t) => $t->timing === 'date' && $t->due_date && $t->due_date->startOfDay()->gt($tomorrow) && $t->due_date->startOfDay()->lt($weekEnd)),
             'later' => $allTasks->filter(fn($t) => $t->timing === 'later' || ($t->timing === 'date' && $t->due_date && $t->due_date->startOfDay()->gte($weekEnd))),
