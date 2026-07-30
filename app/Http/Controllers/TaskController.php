@@ -26,7 +26,9 @@ class TaskController extends Controller
             'created_by'  => auth()->id(),
             'priority'    => $request->priority ?? 'medium',
             'timing'      => $request->timing,
-            'due_date'    => $request->timing === 'date' ? $request->due_date : null,
+            'due_date'    => $request->timing === 'today'
+                ? today()->toDateString()
+                : ($request->timing === 'date' ? $request->due_date : null),
             'status'      => 'new',
             'comment'     => $request->comment,
         ]);
@@ -53,9 +55,18 @@ class TaskController extends Controller
 
         $originalStatus = $task->status;
         $originalTitle = $task->title;
+        $updates = $request->only('status', 'title', 'priority', 'timing', 'due_date', 'comment');
 
-        DB::transaction(function () use ($request, $task) {
-            $task->update($request->only('status', 'title', 'priority', 'timing', 'due_date', 'comment'));
+        if ($request->has('timing')) {
+            if ($request->timing === 'today') {
+                $updates['due_date'] = today()->toDateString();
+            } elseif ($request->timing === 'later') {
+                $updates['due_date'] = null;
+            }
+        }
+
+        DB::transaction(function () use ($request, $task, $updates) {
+            $task->update($updates);
 
             if (! $task->object_item_id) {
                 return;
