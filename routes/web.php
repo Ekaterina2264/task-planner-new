@@ -73,10 +73,15 @@ Route::middleware(['auth'])->group(function () {
         $tomorrowT = $allBySection['tomorrow']->where('status', 'new');
         $weekT = $allBySection['week']->where('status', 'new');
         $laterT = $allBySection['later']->where('status', 'new');
-        $sectionProgress = collect($allBySection)->map(fn($sectionTasks) => [
-            'done' => $sectionTasks->where('status', 'done')->count(),
-            'total' => $sectionTasks->count(),
-        ]);
+        $sectionProgress = collect($allBySection)->map(function ($sectionTasks) {
+            $visibleTasks = $sectionTasks->filter(fn($task) => $task->status !== 'done'
+                || $task->updated_at->isToday());
+
+            return [
+                'done' => $visibleTasks->where('status', 'done')->count(),
+                'total' => $visibleTasks->count(),
+            ];
+        });
 
         $tasksView = $user->isDirector() ? 'director.tasks' : 'employee.dashboard';
 
