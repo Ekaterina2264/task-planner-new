@@ -117,6 +117,7 @@ class TaskController extends Controller
             ->withCount(['tasks as open_tasks_count' => function ($q) {
                 $q->where('status', 'new');
             }])
+            ->orderByRaw('CASE WHEN id = ? THEN 0 ELSE 1 END', [auth()->id()])
             ->orderBy('name')
             ->get();
 
