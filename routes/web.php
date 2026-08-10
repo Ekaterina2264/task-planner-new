@@ -47,6 +47,7 @@ Route::middleware(['auth'])->group(function () {
 
         $allTasks = \App\Models\Task::where('assigned_to', $user->id)
             ->with('objectItem.workObject')
+            ->orderBy('position')
             ->orderByRaw("CASE priority WHEN 'high' THEN 0 WHEN 'medium' THEN 1 ELSE 2 END")
             ->get();
         $tasks = $allTasks->where('status', 'new');
@@ -91,6 +92,7 @@ Route::middleware(['auth'])->group(function () {
     // Задачи
     Route::post('/tasks', [TaskController::class, 'store'])->name('tasks.store');
     Route::patch('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
+    Route::patch('/tasks/{task}/move', [TaskController::class, 'move'])->name('tasks.move');
 
     // Директор — API
     Route::get('/api/employees', [TaskController::class, 'employees'])->name('api.employees');
