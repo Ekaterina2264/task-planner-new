@@ -248,7 +248,6 @@
         .personal-task-section:first-of-type { margin-top: 30px; }
         .personal-task-section[data-personal-section="today"] .task-section-label { color: var(--tappsk-blue); }
         .personal-task-section[data-personal-section="tomorrow"] .task-section-label { color: var(--tappsk-cyan); }
-        .personal-task-section[data-personal-section="week"] .task-section-label,
         .personal-task-section[data-personal-section="later"] .task-section-label { color: var(--tappsk-muted); }
 
         .hamburger {
