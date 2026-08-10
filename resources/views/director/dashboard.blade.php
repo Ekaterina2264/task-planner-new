@@ -523,10 +523,16 @@ function bindDragAndDrop() {
             event.preventDefault();
             clearDropHighlights();
             section.classList.add('drop-active');
+            const zone = section.querySelector('.team-drop-zone');
+            const card = document.querySelector(`.team-task-card[data-task-id="${draggedTask.id}"]`);
+            const cards = [...zone.querySelectorAll('.team-task-card:not(.dragging)')];
+            const before = cards.find(item => event.clientY < item.getBoundingClientRect().top + item.offsetHeight / 2);
+            zone.insertBefore(card, before || null);
         });
         section.addEventListener('drop', event => {
             event.preventDefault();
-            moveTask(draggedTask, section.dataset.teamSection);
+            const orderedTaskIds = [...section.querySelectorAll('.team-task-card')].map(card => Number(card.dataset.taskId));
+            moveTask(draggedTask, section.dataset.teamSection, orderedTaskIds);
         });
     });
 }
@@ -678,7 +684,7 @@ async function saveEdit() {
     const response = await fetch(`/tasks/${task.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-        body: JSON.stringify(updates),
+        body: JSON.stringify({ ...updates, ordered_task_ids: orderedTaskIds }),
     });
 
     if (!response.ok) {
@@ -691,7 +697,7 @@ async function saveEdit() {
     renderBoard();
 }
 
-async function moveTask(task, section) {
+async function moveTask(task, section, orderedTaskIds = null) {
     if (!task) return;
 
     const updates = {
@@ -705,10 +711,13 @@ async function moveTask(task, section) {
     if (!updates) return;
 
     const previous = { timing: task.timing, due_date: task.due_date };
-    Object.assign(task, updates);
-    renderBoard();
+    if (!orderedTaskIds) {
+        const target = document.querySelector(`.team-task-section[data-employee-id="${task.assigned_to}"][data-team-section="${section}"] .team-drop-zone`);
+        target?.appendChild(document.querySelector(`.team-task-card[data-task-id="${task.id}"]`));
+        orderedTaskIds = [...(target?.querySelectorAll('.team-task-card') || [])].map(card => Number(card.dataset.taskId));
+    }
 
-    const response = await fetch(`/tasks/${task.id}`, {
+    const response = await fetch(`/tasks/${task.id}/move`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
         body: JSON.stringify(updates),
@@ -718,7 +727,15 @@ async function moveTask(task, section) {
         Object.assign(task, previous);
         renderBoard();
         alert('Не удалось перенести задачу. Попробуйте ещё раз.');
+        return;
     }
+
+    Object.assign(task, updates);
+    const employee = employees.find(item => item.id === Number(task.assigned_to));
+    const positions = new Map(orderedTaskIds.map((id, index) => [id, index + 1]));
+    employee?.tasks.forEach(item => { if (positions.has(item.id)) item.position = positions.get(item.id); });
+    employee?.tasks.sort((a, b) => (a.position || 0) - (b.position || 0));
+    renderBoard();
 }
 
 function openAddModal(employeeId) {
