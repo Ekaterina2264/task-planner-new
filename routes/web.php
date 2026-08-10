@@ -82,8 +82,9 @@ Route::middleware(['auth'])->group(function () {
         });
 
         $tasksView = $user->isDirector() ? 'director.tasks' : 'employee.dashboard';
+        $employees = $user->isDirector() ? User::orderBy('name')->get() : collect();
 
-        return view($tasksView, compact('overdue', 'todayT', 'tomorrowT', 'laterT', 'sectionProgress'));
+        return view($tasksView, compact('overdue', 'todayT', 'tomorrowT', 'laterT', 'sectionProgress', 'employees'));
     })->name('dashboard');
 
     // Задачи
