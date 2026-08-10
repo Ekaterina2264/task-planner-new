@@ -71,12 +71,22 @@
             <input type="text" id="edit-title" class="form-input">
         </div>
         <div class="form-group">
-            <label class="form-label">Исполнитель</label>
-            <select id="edit-assigned-to" class="form-input"></select>
-        </div>
-        <div class="form-group">
             <label class="form-label">Комментарий</label>
             <textarea id="edit-comment" class="form-input" rows="3" placeholder="Комментарий к задаче..."></textarea>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Исполнитель</label>
+            <div class="assignee-select">
+                <svg class="assignee-select-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9.5" cy="7" r="4"/>
+                    <path stroke-linecap="round" d="M18 8v6M15 11h6"/>
+                </svg>
+                <select id="edit-assigned-to"></select>
+                <svg class="assignee-select-arrow" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m6 8 4 4 4-4"/>
+                </svg>
+            </div>
         </div>
         <div class="form-group">
             <label class="form-label">Приоритет</label>
