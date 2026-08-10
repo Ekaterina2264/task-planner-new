@@ -24,7 +24,8 @@
         data-task-timing="{{ $task->timing }}"
         data-task-date="{{ $task->due_date?->format('Y-m-d') }}"
         data-task-comment="{{ $task->comment ?? '' }}"
-        onclick="if (window.personalSuppressClickUntil && Date.now() < window.personalSuppressClickUntil) return; openEditModal({{ $task->id }}, this.dataset.taskTitle, this.dataset.taskPriority, this.dataset.taskTiming, this.dataset.taskDate, this.dataset.taskComment)"
+        data-task-assigned-to="{{ $task->assigned_to }}"
+        onclick="if (window.personalSuppressClickUntil && Date.now() < window.personalSuppressClickUntil) return; openEditModal({{ $task->id }}, this.dataset.taskTitle, this.dataset.taskPriority, this.dataset.taskTiming, this.dataset.taskDate, this.dataset.taskComment, this.dataset.taskAssignedTo)"
     >
         <span class="task-title" :class="{ 'done': done }">{{ $task->title }}</span>
         @if($task->objectItem?->workObject)
