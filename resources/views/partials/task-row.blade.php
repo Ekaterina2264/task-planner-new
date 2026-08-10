@@ -17,7 +17,15 @@
         </svg>
     </div>
 
-    <div style="flex:1;cursor:pointer;" onclick="if (window.personalSuppressClickUntil && Date.now() < window.personalSuppressClickUntil) return; openEditModal({{ $task->id }}, '{{ addslashes($task->title) }}', '{{ $task->priority }}', '{{ $task->timing }}', '{{ $task->due_date?->format('Y-m-d') }}', '{{ addslashes($task->comment ?? '') }}')">
+    <div
+        style="flex:1;cursor:pointer;"
+        data-task-title="{{ $task->title }}"
+        data-task-priority="{{ $task->priority }}"
+        data-task-timing="{{ $task->timing }}"
+        data-task-date="{{ $task->due_date?->format('Y-m-d') }}"
+        data-task-comment="{{ $task->comment ?? '' }}"
+        onclick="if (window.personalSuppressClickUntil && Date.now() < window.personalSuppressClickUntil) return; openEditModal({{ $task->id }}, this.dataset.taskTitle, this.dataset.taskPriority, this.dataset.taskTiming, this.dataset.taskDate, this.dataset.taskComment)"
+    >
         <span class="task-title" :class="{ 'done': done }">{{ $task->title }}</span>
         @if($task->objectItem?->workObject)
             <div style="font-size:11px;color:var(--tappsk-blue);margin-top:3px;">
