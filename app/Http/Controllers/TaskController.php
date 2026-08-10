@@ -81,11 +81,17 @@ class TaskController extends Controller
             'timing'   => ['sometimes', 'in:today,later,date'],
             'due_date' => ['nullable', 'date'],
             'comment'  => ['nullable', 'string'],
+            'assigned_to' => ['sometimes', 'exists:users,id'],
         ]);
 
         $originalStatus = $task->status;
         $originalTitle = $task->title;
-        $updates = $request->only('status', 'title', 'priority', 'timing', 'due_date', 'comment');
+        $originalAssignedTo = $task->assigned_to;
+        $updates = $request->only('status', 'title', 'priority', 'timing', 'due_date', 'comment', 'assigned_to');
+
+        if ($request->has('assigned_to') && (int) $request->assigned_to !== (int) $task->assigned_to) {
+            $updates['position'] = ((int) Task::where('assigned_to', $request->assigned_to)->max('position')) + 1;
+        }
 
         if ($request->has('timing')) {
             if ($request->timing === 'today') {
@@ -118,6 +124,10 @@ class TaskController extends Controller
                 $itemUpdates['comment'] = $request->comment;
             }
 
+            if ($request->has('assigned_to')) {
+                $itemUpdates['assigned_to'] = $request->assigned_to;
+            }
+
             if ($itemUpdates) {
                 $task->objectItem()->update($itemUpdates);
             }
@@ -133,6 +143,12 @@ class TaskController extends Controller
                 'task.renamed',
                 "Задача «{$originalTitle}» переименована",
                 "Новое название: {$request->title}"
+            );
+        } elseif ($request->has('assigned_to') && (int) $request->assigned_to !== (int) $originalAssignedTo) {
+            ActivityLog::record(
+                'task.reassigned',
+                "Переназначена задача «{$task->fresh()->title}»",
+                'Новый ответственный: ' . $task->fresh()->assignee()->value('name')
             );
         } elseif ($task->wasChanged()) {
             ActivityLog::record('task.updated', "Изменена задача «{$task->fresh()->title}»");
