@@ -5,7 +5,7 @@
     <div class="team-objects" aria-label="Объекты">
         @foreach($objects as $object)
             <a class="team-object-link"
-                href="{{ route('dashboard', ['view' => 'objects', 'object' => $object->id]) }}"
+                href="{{ route('dashboard', ['view' => 'objects']) }}#object-{{ $object->id }}"
                 title="{{ $object->name }}">
                 <span class="team-object-circle">
                     <svg width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
