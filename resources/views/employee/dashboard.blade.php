@@ -146,6 +146,14 @@ document.addEventListener('keydown', e => {
             <label class="form-label">Название</label>
             <input type="text" id="edit-title" class="form-input">
         </div>
+        <div class="form-group">
+            <label class="form-label">Исполнитель</label>
+            <select id="edit-assigned-to" class="form-input">
+                @foreach($employees as $employee)
+                    <option value="{{ $employee->id }}">{{ $employee->name }}</option>
+                @endforeach
+            </select>
+        </div>
 
         <div class="form-group">
             <label class="form-label">Приоритет</label>
@@ -182,11 +190,12 @@ document.addEventListener('keydown', e => {
 let editPriority = 'medium';
 let editTiming = 'today';
 
-function openEditModal(id, title, priority, timing, date, comment) {
+function openEditModal(id, title, priority, timing, date, comment, assignedTo) {
     document.getElementById('edit-task-id').value = id;
     document.getElementById('edit-title').value = title;
     document.getElementById('edit-comment').value = comment;
     document.getElementById('edit-date').value = date || '';
+    document.getElementById('edit-assigned-to').value = assignedTo;
     setEditPriority(priority);
     setEditTiming(timing);
     document.getElementById('edit-modal').style.display = 'flex';
@@ -217,6 +226,7 @@ async function saveEdit() {
         priority: editPriority,
         timing: editTiming,
         comment: document.getElementById('edit-comment').value,
+        assigned_to: document.getElementById('edit-assigned-to').value,
     };
     if (editTiming === 'date') body.due_date = document.getElementById('edit-date').value;
 
