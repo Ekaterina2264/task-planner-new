@@ -192,6 +192,27 @@
             outline: none; transition: border-color 0.15s;
         }
         .form-input:focus { border-color: var(--accent); background: #fff; }
+        .assignee-select { position: relative; }
+        .assignee-select select {
+            width: 100%; min-height: 44px; padding: 10px 42px;
+            border: 1px solid #e5e5eb; border-radius: 10px;
+            appearance: none; -webkit-appearance: none;
+            background: #f8f8fb; color: #27272f;
+            font-size: 14px; font-weight: 500; cursor: pointer;
+            outline: none; transition: border-color .15s, background .15s, box-shadow .15s;
+        }
+        .assignee-select select:hover { background: #f4f2fb; border-color: #dcd8eb; }
+        .assignee-select select:focus {
+            background: #fff; border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, .11);
+        }
+        .assignee-select-icon,
+        .assignee-select-arrow {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            width: 18px; height: 18px; pointer-events: none;
+        }
+        .assignee-select-icon { left: 14px; color: var(--accent); }
+        .assignee-select-arrow { right: 14px; width: 14px; height: 14px; color: #9b9baa; }
         .form-group { margin-bottom: 16px; }
         .priority-pills { display: flex; gap: 8px; }
         .priority-pill {
