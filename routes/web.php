@@ -54,7 +54,6 @@ Route::middleware(['auth'])->group(function () {
 
         $today     = now()->startOfDay();
         $tomorrow  = now()->addDay()->startOfDay();
-        $weekEnd   = now()->addDays(7)->startOfDay();
         $effectiveDueDate = fn($task) => $task->due_date?->copy()->startOfDay()
             ?? ($task->timing === 'today' ? $task->created_at->copy()->startOfDay() : null);
 
@@ -66,13 +65,11 @@ Route::middleware(['auth'])->group(function () {
                 && ($date = $effectiveDueDate($t))
                 && $date->eq($today)),
             'tomorrow' => $allTasks->filter(fn($t) => $t->timing === 'date' && $t->due_date && $t->due_date->startOfDay()->eq($tomorrow)),
-            'week' => $allTasks->filter(fn($t) => $t->timing === 'date' && $t->due_date && $t->due_date->startOfDay()->gt($tomorrow) && $t->due_date->startOfDay()->lt($weekEnd)),
-            'later' => $allTasks->filter(fn($t) => $t->timing === 'later' || ($t->timing === 'date' && $t->due_date && $t->due_date->startOfDay()->gte($weekEnd))),
+            'later' => $allTasks->filter(fn($t) => $t->timing === 'later' || ($t->timing === 'date' && $t->due_date && $t->due_date->startOfDay()->gt($tomorrow))),
         ];
         $overdue = $allBySection['overdue']->where('status', 'new');
         $todayT = $allBySection['today']->where('status', 'new');
         $tomorrowT = $allBySection['tomorrow']->where('status', 'new');
-        $weekT = $allBySection['week']->where('status', 'new');
         $laterT = $allBySection['later']->where('status', 'new');
         $sectionProgress = collect($allBySection)->map(function ($sectionTasks) {
             $visibleTasks = $sectionTasks->filter(fn($task) => $task->status !== 'done'
@@ -86,7 +83,7 @@ Route::middleware(['auth'])->group(function () {
 
         $tasksView = $user->isDirector() ? 'director.tasks' : 'employee.dashboard';
 
-        return view($tasksView, compact('overdue', 'todayT', 'tomorrowT', 'weekT', 'laterT', 'sectionProgress'));
+        return view($tasksView, compact('overdue', 'todayT', 'tomorrowT', 'laterT', 'sectionProgress'));
     })->name('dashboard');
 
     // Задачи
