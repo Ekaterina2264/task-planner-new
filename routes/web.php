@@ -26,21 +26,14 @@ Route::middleware(['auth'])->group(function () {
         }
 
         if (request('view') === 'objects') {
-            $selectedObjectId = request()->integer('object');
-            $objectsQuery = WorkObject::with(['items.assignee', 'deletedItems', 'sections'])->orderBy('name');
-
-            if ($selectedObjectId) {
-                $objectsQuery->whereKey($selectedObjectId);
-            }
-
-            $objects = $objectsQuery->get();
+            $objects = WorkObject::with(['items.assignee', 'deletedItems', 'sections'])->orderBy('name')->get();
             $deletedItems = ObjectItem::onlyTrashed()
                 ->with(['workObject.sections'])
                 ->orderByDesc('deleted_at')
                 ->get();
             $employees = User::orderBy('name')->get();
 
-            return view('objects.index', compact('objects', 'deletedItems', 'employees', 'selectedObjectId'));
+            return view('objects.index', compact('objects', 'deletedItems', 'employees'));
         }
 
         if (request('view') === 'history') {
