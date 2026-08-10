@@ -471,29 +471,33 @@ function personalTimingBadge(section, dueDate) {
     return `<span class="badge badge-date">${date.toLocaleDateString('ru', { day: 'numeric', month: 'short' })}</span>`;
 }
 
-async function movePersonalTask(taskId, section) {
+async function movePersonalTask(taskId, section, sourceSection) {
     const updates = personalSectionUpdate(section);
     if (!taskId || !updates) return;
 
     const card = document.getElementById(`task-${taskId}`);
-    const sourceSection = card?.closest('.personal-task-section');
     const targetSection = document.querySelector(`.personal-task-section[data-personal-section="${section}"]`);
-    if (!card || !sourceSection || !targetSection || sourceSection === targetSection) return;
+    if (!card || !sourceSection || !targetSection) return;
 
-    const response = await fetch(`/tasks/${taskId}`, {
+    const orderedTaskIds = [...targetSection.querySelectorAll('.task-card')]
+        .map(item => Number(item.id.replace('task-', '')));
+
+    const response = await fetch(`/tasks/${taskId}/move`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-        body: JSON.stringify(updates),
+        body: JSON.stringify({ ...updates, ordered_task_ids: orderedTaskIds }),
     });
 
     if (!response.ok) {
         alert('Не удалось перенести задачу. Попробуйте ещё раз.');
+        window.location.reload();
         return;
     }
 
-    changeSectionTotal(sourceSection, -1);
-    changeSectionTotal(targetSection, 1);
-    targetSection.appendChild(card);
+    if (sourceSection !== targetSection) {
+        changeSectionTotal(sourceSection, -1);
+        changeSectionTotal(targetSection, 1);
+    }
 
     const timingSlot = card.querySelector('.task-date-slot');
     if (timingSlot) timingSlot.innerHTML = personalTimingBadge(section, updates.due_date);
@@ -504,6 +508,7 @@ function initPersonalTaskDrag() {
     if (!sections.length) return;
 
     let draggedId = null;
+    let sourceSection = null;
     let touchTarget = null;
     const clearHighlights = () => sections.forEach(section => section.classList.remove('personal-drop-active'));
 
@@ -513,11 +518,15 @@ function initPersonalTaskDrag() {
             event.preventDefault();
             clearHighlights();
             section.classList.add('personal-drop-active');
+            const card = document.getElementById(`task-${draggedId}`);
+            const cards = [...section.querySelectorAll('.task-card:not(.personal-dragging)')];
+            const before = cards.find(item => event.clientY < item.getBoundingClientRect().top + item.offsetHeight / 2);
+            section.insertBefore(card, before || null);
         });
         section.addEventListener('drop', event => {
             event.preventDefault();
             clearHighlights();
-            movePersonalTask(draggedId, section.dataset.personalSection);
+            movePersonalTask(draggedId, section.dataset.personalSection, sourceSection);
         });
     });
 
@@ -531,12 +540,14 @@ function initPersonalTaskDrag() {
                 return;
             }
             draggedId = taskId;
+            sourceSection = card.closest('.personal-task-section');
             card.classList.add('personal-dragging');
             event.dataTransfer.effectAllowed = 'move';
         });
         card.addEventListener('dragend', () => {
             window.personalSuppressClickUntil = Date.now() + 300;
             draggedId = null;
+            sourceSection = null;
             card.classList.remove('personal-dragging');
             clearHighlights();
         });
@@ -554,6 +565,7 @@ function initPersonalTaskDrag() {
             timer = setTimeout(() => {
                 active = true;
                 draggedId = taskId;
+                sourceSection = card.closest('.personal-task-section');
                 card.classList.add('personal-dragging');
                 if (navigator.vibrate) navigator.vibrate(30);
             }, 300);
@@ -576,8 +588,12 @@ function initPersonalTaskDrag() {
             card.classList.remove('personal-dragging');
             clearHighlights();
             if (active) window.personalSuppressClickUntil = Date.now() + 500;
-            if (active && touchTarget) movePersonalTask(draggedId, touchTarget.dataset.personalSection);
+            if (active && touchTarget) {
+                touchTarget.appendChild(card);
+                movePersonalTask(draggedId, touchTarget.dataset.personalSection, sourceSection);
+            }
             draggedId = null;
+            sourceSection = null;
             touchTarget = null;
             active = false;
         });
