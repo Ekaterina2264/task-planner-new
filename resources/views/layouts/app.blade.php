@@ -447,7 +447,6 @@ function personalSectionUpdate(section) {
         overdue: { timing: 'date', due_date: personalLocalDate(-1) },
         today: { timing: 'today', due_date: null },
         tomorrow: { timing: 'date', due_date: personalLocalDate(1) },
-        week: { timing: 'date', due_date: personalLocalDate(2) },
         later: { timing: 'later', due_date: null },
     }[section];
 }
