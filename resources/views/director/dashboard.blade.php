@@ -71,6 +71,10 @@
             <input type="text" id="edit-title" class="form-input">
         </div>
         <div class="form-group">
+            <label class="form-label">Исполнитель</label>
+            <select id="edit-assigned-to" class="form-input"></select>
+        </div>
+        <div class="form-group">
             <label class="form-label">Комментарий</label>
             <textarea id="edit-comment" class="form-input" rows="3" placeholder="Комментарий к задаче..."></textarea>
         </div>
@@ -628,6 +632,9 @@ function openEditModal(event, employeeId, taskId) {
     document.getElementById('edit-title').value = editingTask.title;
     document.getElementById('edit-comment').value = editingTask.comment || '';
     document.getElementById('edit-date').value = taskDate(editingTask) || '';
+    const assigneeSelect = document.getElementById('edit-assigned-to');
+    assigneeSelect.innerHTML = employees.map(employee => `<option value="${employee.id}">${escapeHtml(employee.name)}</option>`).join('');
+    assigneeSelect.value = editingTask.assigned_to;
     setEditPriority(editingTask.priority);
     setEditTiming(editingTask.timing);
     document.getElementById('edit-modal').style.display = 'flex';
@@ -671,6 +678,7 @@ async function saveEdit() {
         priority: editPriority,
         timing: editTiming,
         due_date: editTiming === 'date' ? document.getElementById('edit-date').value : null,
+        assigned_to: Number(document.getElementById('edit-assigned-to').value),
     };
 
     if (editTiming === 'date' && !updates.due_date) {
@@ -681,7 +689,7 @@ async function saveEdit() {
     const response = await fetch(`/tasks/${task.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-        body: JSON.stringify({ ...updates, ordered_task_ids: orderedTaskIds }),
+        body: JSON.stringify(updates),
     });
 
     if (!response.ok) {
@@ -689,9 +697,11 @@ async function saveEdit() {
         return;
     }
 
+    const reassigned = Number(task.assigned_to) !== Number(updates.assigned_to);
     Object.assign(task, updates);
     closeEditModal();
-    renderBoard();
+    if (reassigned) await loadTeam();
+    else renderBoard();
 }
 
 async function moveTask(task, section, orderedTaskIds = null) {
@@ -716,7 +726,7 @@ async function moveTask(task, section, orderedTaskIds = null) {
     const response = await fetch(`/tasks/${task.id}/move`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-        body: JSON.stringify(updates),
+        body: JSON.stringify({ ...updates, ordered_task_ids: orderedTaskIds }),
     });
 
     if (!response.ok) {
