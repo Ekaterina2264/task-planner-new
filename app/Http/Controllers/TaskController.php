@@ -30,6 +30,7 @@ class TaskController extends Controller
                 ? today()->toDateString()
                 : ($request->timing === 'date' ? $request->due_date : null),
             'status'      => 'new',
+            'position'    => ((int) Task::where('assigned_to', $request->assigned_to)->max('position')) + 1,
             'comment'     => $request->comment,
         ]);
 
@@ -38,6 +39,35 @@ class TaskController extends Controller
             "Создана задача «{$task->title}»",
             'Ответственный: ' . $task->assignee()->value('name')
         );
+
+        return response()->json(['success' => true]);
+    }
+
+    public function move(Request $request, Task $task)
+    {
+        $data = $request->validate([
+            'timing' => ['required', 'in:today,later,date'],
+            'due_date' => ['nullable', 'date', 'required_if:timing,date'],
+            'ordered_task_ids' => ['required', 'array', 'min:1'],
+            'ordered_task_ids.*' => ['integer', 'distinct'],
+        ]);
+
+        $ids = collect($data['ordered_task_ids'])->map(fn ($id) => (int) $id);
+        abort_unless($ids->contains($task->id), 422);
+        abort_unless(Task::where('assigned_to', $task->assigned_to)->whereIn('id', $ids)->count() === $ids->count(), 422);
+
+        DB::transaction(function () use ($task, $data, $ids) {
+            $task->update([
+                'timing' => $data['timing'],
+                'due_date' => $data['timing'] === 'date'
+                    ? $data['due_date']
+                    : ($data['timing'] === 'today' ? today()->toDateString() : null),
+            ]);
+
+            foreach ($ids as $index => $id) {
+                Task::whereKey($id)->update(['position' => $index + 1]);
+            }
+        });
 
         return response()->json(['success' => true]);
     }
@@ -128,6 +158,7 @@ class TaskController extends Controller
     {
         $tasks = Task::where('assigned_to', $user->id)
             ->with('objectItem.workObject')
+            ->orderBy('position')
             ->orderByRaw("CASE priority WHEN 'high' THEN 0 WHEN 'medium' THEN 1 ELSE 2 END")
             ->get();
 
