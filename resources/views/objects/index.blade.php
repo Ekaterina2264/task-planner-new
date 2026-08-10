@@ -15,6 +15,24 @@
     </div>
 </div>
 
+@if($objects->isNotEmpty())
+    <div class="object-shortcuts" aria-label="Быстрый переход к объекту">
+        @foreach($objects as $object)
+            <a class="object-shortcut-link" href="#object-{{ $object->id }}"
+                onclick="openObjectShortcut(event, {{ $object->id }})"
+                title="{{ $object->name }}">
+                <span class="object-shortcut-circle">
+                    <svg width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-2M9 9v.01M9 13v.01M9 17v.01M16 13v.01M16 17v.01"/>
+                    </svg>
+                    <span>{{ $object->items->where('is_completed', false)->count() }}/{{ $object->items->count() }}</span>
+                </span>
+                <span class="object-shortcut-name">{{ $object->name }}</span>
+            </a>
+        @endforeach
+    </div>
+@endif
+
 <div class="objects-list">
     @forelse($objects as $object)
         <section class="object-board" id="object-{{ $object->id }}" data-object-id="{{ $object->id }}">
@@ -257,6 +275,58 @@
 </div>
 
 <style>
+.object-shortcuts {
+    display: flex;
+    gap: 16px;
+    margin: -6px 0 22px;
+    padding: 2px 0 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.object-shortcuts::-webkit-scrollbar { display: none; }
+.object-shortcut-link {
+    display: flex;
+    flex: 0 0 86px;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    color: #858593;
+    text-align: center;
+    text-decoration: none;
+}
+.object-shortcut-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    width: 68px;
+    height: 68px;
+    border: 3px solid #dff3ff;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #45bafa, #258ee8);
+    box-shadow: inset 0 0 0 3px #fff, 0 4px 12px rgba(45, 165, 244, .16);
+    color: #fff;
+    transition: transform .15s, box-shadow .15s;
+}
+.object-shortcut-circle span {
+    margin-top: -1px;
+    font-size: 11px;
+    line-height: 1;
+}
+.object-shortcut-link:hover .object-shortcut-circle {
+    transform: translateY(-2px);
+    box-shadow: inset 0 0 0 3px #fff, 0 7px 16px rgba(45, 165, 244, .24);
+}
+.object-shortcut-name {
+    display: -webkit-box;
+    max-width: 86px;
+    overflow: hidden;
+    font-size: 12px;
+    line-height: 1.25;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
 .objects-page-header {
     display: flex;
     align-items: center;
@@ -923,6 +993,29 @@ async function restoreObjectItem(itemId) {
 
     if (response.ok) window.location.reload();
     else alert('Не удалось восстановить пункт. Возможно, его раздел уже удалён.');
+}
+
+function openObjectShortcut(event, objectId) {
+    event.preventDefault();
+
+    const target = document.getElementById(`object-${objectId}`);
+    if (!target) return;
+
+    document.querySelectorAll('.object-board').forEach(board => {
+        const boardId = Number(board.dataset.objectId);
+        const sections = document.getElementById(`object-sections-${boardId}`);
+        const button = board.querySelector('.object-collapse');
+        if (!sections || !button) return;
+
+        const collapsed = board !== target;
+        sections.hidden = collapsed;
+        button.classList.toggle('is-collapsed', collapsed);
+        button.title = collapsed ? 'Развернуть объект' : 'Свернуть объект';
+        button.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    });
+
+    history.pushState(null, '', `#object-${objectId}`);
+    requestAnimationFrame(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }));
 }
 
 function toggleObject(objectId) {
