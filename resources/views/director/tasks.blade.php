@@ -83,6 +83,14 @@
             <input type="text" id="edit-title" class="form-input">
         </div>
         <div class="form-group">
+            <label class="form-label">Исполнитель</label>
+            <select id="edit-assigned-to" class="form-input">
+                @foreach($employees as $employee)
+                    <option value="{{ $employee->id }}">{{ $employee->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="form-group">
             <label class="form-label">Приоритет</label>
             <div class="priority-pills">
                 <div class="priority-pill" data-val="high" onclick="setEditPriority('high')">🔴 Высокий</div>
@@ -125,11 +133,12 @@ async function submitTask() {
     await fetch('/tasks', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }, body: JSON.stringify(body) });
     window.location.reload();
 }
-function openEditModal(id, title, priority, timing, date, comment) {
+function openEditModal(id, title, priority, timing, date, comment, assignedTo) {
     document.getElementById('edit-task-id').value = id;
     document.getElementById('edit-title').value = title;
     document.getElementById('edit-comment').value = comment;
     document.getElementById('edit-date').value = date || '';
+    document.getElementById('edit-assigned-to').value = assignedTo;
     setEditPriority(priority); setEditTiming(timing);
     document.getElementById('edit-modal').style.display = 'flex';
 }
@@ -138,7 +147,7 @@ function setEditPriority(val) { editPriority = val; document.querySelectorAll('#
 function setEditTiming(val) { editTiming = val; document.querySelectorAll('#edit-modal .timing-pill').forEach(p => p.classList.toggle('active', p.dataset.val === val)); document.getElementById('edit-date-field').style.display = val === 'date' ? 'block' : 'none'; }
 async function saveEdit() {
     const id = document.getElementById('edit-task-id').value;
-    const body = { title: document.getElementById('edit-title').value.trim(), priority: editPriority, timing: editTiming, comment: document.getElementById('edit-comment').value };
+    const body = { title: document.getElementById('edit-title').value.trim(), priority: editPriority, timing: editTiming, comment: document.getElementById('edit-comment').value, assigned_to: document.getElementById('edit-assigned-to').value };
     if (editTiming === 'date') body.due_date = document.getElementById('edit-date').value;
     await fetch(`/tasks/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }, body: JSON.stringify(body) });
     closeEditModal(); window.location.reload();
