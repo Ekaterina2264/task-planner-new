@@ -79,6 +79,9 @@
             box-shadow: none; border-bottom: 1px solid #f5f5f5; transition: none;
         }
         .task-card:hover { box-shadow: none; }
+        .sortable-task-section, .sortable-team-section { min-height: 48px; border: 1px dashed transparent; border-radius: 10px; }
+        .sortable-task-section.drag-over, .sortable-team-section.drag-over { background: #f8f7ff; border-color: var(--accent); }
+        .task-card.is-dragging { opacity: .35; }
         .task-checkbox {
             width: 20px; height: 20px; border-radius: 4px; border: 2px solid #c5b8fb;
             display: flex; align-items: center; justify-content: center;
@@ -343,6 +346,89 @@ function closeSidebar() {
     document.querySelector('.sidebar').classList.remove('open');
     document.getElementById('sidebar-overlay').classList.remove('open');
 }
+
+function taskSectionUpdate(section) {
+    const date = new Date();
+    date.setHours(12, 0, 0, 0);
+    const format = offset => {
+        const value = new Date(date);
+        value.setDate(value.getDate() + offset);
+        return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`;
+    };
+    return {
+        overdue: { timing: 'date', due_date: format(-1) },
+        today: { timing: 'today', due_date: null },
+        tomorrow: { timing: 'date', due_date: format(1) },
+        week: { timing: 'date', due_date: format(2) },
+        later: { timing: 'later', due_date: null },
+    }[section];
+}
+
+function initTaskSorting() {
+    const sections = [...document.querySelectorAll('.sortable-task-section')];
+    if (!sections.length) return;
+
+    let card = null;
+    let source = null;
+
+    document.querySelectorAll('.sortable-task-section .task-card').forEach(item => {
+        item.draggable = true;
+        item.addEventListener('dragstart', event => {
+            if (event.target.closest('.task-checkbox')) return event.preventDefault();
+            card = item;
+            source = item.closest('.sortable-task-section');
+            item.classList.add('is-dragging');
+            event.dataTransfer.effectAllowed = 'move';
+        });
+        item.addEventListener('dragend', () => {
+            item.classList.remove('is-dragging');
+            sections.forEach(section => section.classList.remove('drag-over'));
+            card = null;
+            source = null;
+        });
+    });
+
+    sections.forEach(section => {
+        section.addEventListener('dragover', event => {
+            if (!card) return;
+            event.preventDefault();
+            sections.forEach(item => item.classList.remove('drag-over'));
+            section.classList.add('drag-over');
+            const siblings = [...section.querySelectorAll('.task-card:not(.is-dragging)')];
+            const before = siblings.find(item => event.clientY < item.getBoundingClientRect().top + item.offsetHeight / 2);
+            section.insertBefore(card, before || null);
+        });
+
+        section.addEventListener('drop', async event => {
+            event.preventDefault();
+            if (!card || !source) return;
+
+            const taskId = Number(card.id.replace('task-', ''));
+            const update = taskSectionUpdate(section.dataset.taskSection);
+            const orderedIds = [...section.querySelectorAll('.task-card')].map(item => Number(item.id.replace('task-', '')));
+            const response = await fetch(`/tasks/${taskId}/move`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                body: JSON.stringify({ ...update, ordered_task_ids: orderedIds }),
+            });
+
+            if (!response.ok) {
+                alert('Не удалось сохранить порядок задач.');
+                window.location.reload();
+                return;
+            }
+
+            if (source !== section) {
+                [source, section].forEach(item => {
+                    const count = item.querySelector('.task-section-count');
+                    if (count) count.textContent = item.querySelectorAll('.task-card').length;
+                });
+            }
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', initTaskSorting);
 </script>
 
 @fluxScripts

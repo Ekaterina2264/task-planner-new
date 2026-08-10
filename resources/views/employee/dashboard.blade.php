@@ -5,7 +5,7 @@
 <div class="page-subtitle">{{ now()->locale('ru')->translatedFormat('l, j F Y') }}</div>
 
 @if($overdue->isNotEmpty())
-<div class="task-section">
+<div class="task-section sortable-task-section" data-task-section="overdue">
     <div class="task-section-label overdue">
         Просроченные <span class="task-section-count">{{ $overdue->count() }}</span>
     </div>
@@ -15,7 +15,7 @@
 </div>
 @endif
 
-<div class="task-section">
+<div class="task-section sortable-task-section" data-task-section="today">
     <div class="task-section-label">
         Сегодня <span class="task-section-count">{{ $todayT->count() }}</span>
     </div>
@@ -27,7 +27,7 @@
 </div>
 
 @if($tomorrowT->isNotEmpty())
-<div class="task-section">
+<div class="task-section sortable-task-section" data-task-section="tomorrow">
     <div class="task-section-label">
         Завтра <span class="task-section-count">{{ $tomorrowT->count() }}</span>
     </div>
@@ -38,7 +38,7 @@
 @endif
 
 @if($weekT->isNotEmpty())
-<div class="task-section">
+<div class="task-section sortable-task-section" data-task-section="week">
     <div class="task-section-label">
         На неделе <span class="task-section-count">{{ $weekT->count() }}</span>
     </div>
@@ -49,7 +49,7 @@
 @endif
 
 @if($laterT->isNotEmpty())
-<div class="task-section">
+<div class="task-section sortable-task-section" data-task-section="later">
     <div class="task-section-label">
         Потом <span class="task-section-count">{{ $laterT->count() }}</span>
     </div>

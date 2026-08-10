@@ -15,6 +15,7 @@ class Task extends Model
         'timing',
         'due_date',
         'status',
+        'position',
         'comment',
     ];
 

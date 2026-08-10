@@ -74,6 +74,7 @@
 <script>
 const avatarColors = ['#7c6ff7','#38c97b','#ff5c5c','#f4a223','#2f86d4','#e040fb'];
 let currentEmpId = null;
+let currentTasks = [];
 let priority = 'medium';
 let timing = 'today';
 
@@ -139,6 +140,7 @@ async function viewEmployee(id, name) {
 
     const res = await fetch(`/api/employees/${id}/tasks`);
     const { tasks } = await res.json();
+    currentTasks = tasks;
     renderTasks(tasks);
 }
 
@@ -213,15 +215,13 @@ function renderTasks(tasks) {
     let html = '';
 
     sections.forEach(([key, label, isOverdue]) => {
-        if (!groups[key].length) return;
-
-        html += `<div class="task-section">
+        html += `<div class="task-section sortable-team-section" data-task-section="${key}">
             <div class="task-section-label ${isOverdue ? 'overdue' : ''}">
                 ${label} <span class="task-section-count">${groups[key].length}</span>
             </div>`;
 
         groups[key].forEach(t => {
-            html += `<div class="task-card">
+            html += `<div class="task-card" draggable="true" data-task-id="${t.id}">
                 <div class="task-checkbox" style="border-color:#7c6ff7;cursor:default"></div>
                 <div style="flex:1">
                     <span class="task-title">${t.title}</span>
@@ -238,6 +238,74 @@ function renderTasks(tasks) {
     });
 
     container.innerHTML = html || '<div class="empty-state">Все задачи выполнены ✓</div>';
+    initTeamTaskSorting();
+}
+
+function teamSectionUpdate(section) {
+    const value = offset => {
+        const date = new Date();
+        date.setHours(12, 0, 0, 0);
+        date.setDate(date.getDate() + offset);
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    };
+    return {
+        overdue: { timing: 'date', due_date: value(-1) },
+        today: { timing: 'today', due_date: null },
+        tomorrow: { timing: 'date', due_date: value(1) },
+        week: { timing: 'date', due_date: value(2) },
+        later: { timing: 'later', due_date: null },
+    }[section];
+}
+
+function initTeamTaskSorting() {
+    const sections = [...document.querySelectorAll('.sortable-team-section')];
+    let dragged = null;
+
+    document.querySelectorAll('.sortable-team-section .task-card').forEach(card => {
+        card.addEventListener('dragstart', event => {
+            dragged = card;
+            card.classList.add('is-dragging');
+            event.dataTransfer.effectAllowed = 'move';
+        });
+        card.addEventListener('dragend', () => {
+            card.classList.remove('is-dragging');
+            sections.forEach(section => section.classList.remove('drag-over'));
+            dragged = null;
+        });
+    });
+
+    sections.forEach(section => {
+        section.addEventListener('dragover', event => {
+            if (!dragged) return;
+            event.preventDefault();
+            section.classList.add('drag-over');
+            const siblings = [...section.querySelectorAll('.task-card:not(.is-dragging)')];
+            const before = siblings.find(card => event.clientY < card.getBoundingClientRect().top + card.offsetHeight / 2);
+            section.insertBefore(dragged, before || null);
+        });
+        section.addEventListener('drop', async event => {
+            event.preventDefault();
+            if (!dragged) return;
+            const id = Number(dragged.dataset.taskId);
+            const update = teamSectionUpdate(section.dataset.taskSection);
+            const orderedIds = [...section.querySelectorAll('.task-card')].map(card => Number(card.dataset.taskId));
+            const response = await fetch(`/tasks/${id}/move`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                body: JSON.stringify({ ...update, ordered_task_ids: orderedIds }),
+            });
+            if (!response.ok) {
+                alert('Не удалось сохранить порядок задач.');
+                return viewEmployee(currentEmpId, document.getElementById('emp-name').textContent);
+            }
+            const task = currentTasks.find(item => item.id === id);
+            if (task) Object.assign(task, update);
+            orderedIds.forEach((taskId, index) => {
+                const item = currentTasks.find(task => task.id === taskId);
+                if (item) item.position = index + 1;
+            });
+        });
+    });
 }
 
 function showEmployees() {

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TaskController extends Controller
 {
@@ -26,8 +27,35 @@ class TaskController extends Controller
             'timing'      => $request->timing,
             'due_date'    => $request->timing === 'date' ? $request->due_date : null,
             'status'      => 'new',
+            'position'    => ((int) Task::where('assigned_to', $request->assigned_to)->max('position')) + 1,
             'comment'     => $request->comment,
         ]);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function move(Request $request, Task $task)
+    {
+        $data = $request->validate([
+            'timing' => ['required', 'in:today,later,date'],
+            'due_date' => ['nullable', 'date', 'required_if:timing,date'],
+            'ordered_task_ids' => ['required', 'array', 'min:1'],
+            'ordered_task_ids.*' => ['integer', 'distinct'],
+        ]);
+
+        $ids = collect($data['ordered_task_ids'])->map(fn ($id) => (int) $id);
+        abort_unless($ids->contains($task->id), 422);
+        abort_unless(Task::where('assigned_to', $task->assigned_to)->whereIn('id', $ids)->count() === $ids->count(), 422);
+
+        DB::transaction(function () use ($task, $data, $ids) {
+            $task->update([
+                'timing' => $data['timing'],
+                'due_date' => $data['timing'] === 'date' ? $data['due_date'] : null,
+            ]);
+            foreach ($ids as $index => $id) {
+                Task::whereKey($id)->update(['position' => $index + 1]);
+            }
+        });
 
         return response()->json(['success' => true]);
     }
@@ -63,6 +91,7 @@ class TaskController extends Controller
     public function employeeTasks(User $user)
     {
         $tasks = Task::where('assigned_to', $user->id)
+            ->orderBy('position')
             ->orderByRaw("CASE priority WHEN 'high' THEN 0 WHEN 'medium' THEN 1 ELSE 2 END")
             ->get();
 
