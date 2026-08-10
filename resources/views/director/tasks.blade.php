@@ -3,7 +3,7 @@
 
 <div class="task-section personal-task-section" data-personal-section="overdue">
     <div class="task-section-label overdue">
-        Просроченные <span class="task-section-count task-progress-count" data-done="{{ $sectionProgress['overdue']['done'] }}" data-total="{{ $sectionProgress['overdue']['total'] }}">{{ $sectionProgress['overdue']['done'] }}/{{ $sectionProgress['overdue']['total'] }}</span>
+        Важное <span class="task-section-count task-progress-count" data-done="{{ $sectionProgress['overdue']['done'] }}" data-total="{{ $sectionProgress['overdue']['total'] }}">{{ $sectionProgress['overdue']['done'] }}/{{ $sectionProgress['overdue']['total'] }}</span>
     </div>
     @foreach($overdue as $task)
         @include('partials.task-row', ['task' => $task])
@@ -24,15 +24,6 @@
         Завтра <span class="task-section-count task-progress-count" data-done="{{ $sectionProgress['tomorrow']['done'] }}" data-total="{{ $sectionProgress['tomorrow']['total'] }}">{{ $sectionProgress['tomorrow']['done'] }}/{{ $sectionProgress['tomorrow']['total'] }}</span>
     </div>
     @foreach($tomorrowT as $task)
-        @include('partials.task-row', ['task' => $task])
-    @endforeach
-</div>
-
-<div class="task-section personal-task-section" data-personal-section="week">
-    <div class="task-section-label">
-        На неделе <span class="task-section-count task-progress-count" data-done="{{ $sectionProgress['week']['done'] }}" data-total="{{ $sectionProgress['week']['total'] }}">{{ $sectionProgress['week']['done'] }}/{{ $sectionProgress['week']['total'] }}</span>
-    </div>
-    @foreach($weekT as $task)
         @include('partials.task-row', ['task' => $task])
     @endforeach
 </div>
