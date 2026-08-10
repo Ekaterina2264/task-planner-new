@@ -303,10 +303,9 @@
 <script>
 const avatarColors = ['#7c6ff7','#38c97b','#ff5c5c','#f4a223','#2f86d4','#e040fb'];
 const sections = [
-    ['overdue', 'Просроченные', true, true],
+    ['overdue', 'Важное', true, true],
     ['today', 'Сегодня', false, true],
     ['tomorrow', 'Завтра', false, true],
-    ['week', 'На неделе', false, true],
     ['later', 'Потом', false, true],
 ];
 
@@ -347,10 +346,9 @@ function taskDate(task) {
 }
 
 function groupTasks(tasks, includeDone = false) {
-    const groups = { overdue: [], today: [], tomorrow: [], week: [], later: [] };
+    const groups = { overdue: [], today: [], tomorrow: [], later: [] };
     const today = localDate();
     const tomorrow = localDate(1);
-    const weekEnd = localDate(7);
 
     tasks.filter(task => {
         if (task.status !== 'done') return true;
@@ -369,7 +367,6 @@ function groupTasks(tasks, includeDone = false) {
             if (dueDate < today) groups.overdue.push(task);
             else if (dueDate === today) groups.today.push(task);
             else if (dueDate === tomorrow) groups.tomorrow.push(task);
-            else if (dueDate < weekEnd) groups.week.push(task);
             else groups.later.push(task);
         } else groups.later.push(task);
     });
@@ -704,7 +701,6 @@ async function moveTask(task, section, orderedTaskIds = null) {
         overdue: { timing: 'date', due_date: localDate(-1) },
         today: { timing: 'today', due_date: null },
         tomorrow: { timing: 'date', due_date: localDate(1) },
-        week: { timing: 'date', due_date: localDate(2) },
         later: { timing: 'later', due_date: null },
     }[section];
 
