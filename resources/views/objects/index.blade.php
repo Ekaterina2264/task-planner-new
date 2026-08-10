@@ -965,6 +965,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const target = window.location.hash ? document.querySelector(window.location.hash) : null;
     if (target?.classList.contains('object-board')) {
+        document.querySelectorAll('.object-board').forEach(board => {
+            if (board === target) return;
+
+            const otherObjectId = Number(board.dataset.objectId);
+            const otherSections = document.getElementById(`object-sections-${otherObjectId}`);
+            const otherButton = board.querySelector('.object-collapse');
+            if (!otherSections || !otherButton) return;
+
+            otherSections.hidden = true;
+            otherButton.classList.add('is-collapsed');
+            otherButton.title = 'Развернуть объект';
+            otherButton.setAttribute('aria-expanded', 'false');
+        });
+
         const objectId = Number(target.dataset.objectId);
         const sections = document.getElementById(`object-sections-${objectId}`);
         const button = target.querySelector('.object-collapse');
