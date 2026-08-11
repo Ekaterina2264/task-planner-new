@@ -2,278 +2,6 @@
 @section('content')
 @php($avatarColors = ['#7c6ff7', '#38c97b', '#ff5c5c', '#f4a223', '#2f86d4', '#e040fb'])
 
-<div class="objects-page-header">
-    <div class="objects-page-actions">
-        <button class="new-object-button" type="button" onclick="openObjectModal()">+ Новый объект</button>
-        <button class="trash-button" type="button" onclick="openTrashModal()"
-            title="Корзина" aria-label="Корзина">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
-                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 10v6M14 10v6"/>
-            </svg>
-        </button>
-    </div>
-</div>
-
-@if($objects->isNotEmpty())
-    <div class="object-shortcuts" aria-label="Быстрый переход к объекту">
-        @foreach($objects as $object)
-            <a class="object-shortcut-link" href="#object-{{ $object->id }}"
-                onclick="openObjectShortcut(event, {{ $object->id }})"
-                title="{{ $object->name }}">
-                <span class="object-shortcut-circle">
-                    <svg width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-2M9 9v.01M9 13v.01M9 17v.01M16 13v.01M16 17v.01"/>
-                    </svg>
-                    <span>{{ $object->items->where('is_completed', false)->count() }}/{{ $object->items->count() }}</span>
-                </span>
-                <span class="object-shortcut-name">{{ $object->name }}</span>
-            </a>
-        @endforeach
-    </div>
-@endif
-
-<div class="objects-list">
-    @forelse($objects as $object)
-        <section class="object-board" id="object-{{ $object->id }}" data-object-id="{{ $object->id }}">
-            <div class="object-board-header">
-                <div class="object-icon">
-                    <svg width="21" height="21" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-2M9 9v.01M9 13v.01M9 17v.01M16 13v.01M16 17v.01"/>
-                    </svg>
-                </div>
-                <div class="object-heading">
-                    <div class="object-name">{{ $object->name }}</div>
-                    <div class="object-count">{{ $object->items->where('is_completed', false)->count() }} активных пунктов</div>
-                </div>
-                <div class="object-actions">
-                    <div class="object-menu">
-                        <button class="object-menu-toggle" type="button"
-                            onclick="toggleObjectMenu(event, {{ $object->id }})"
-                            title="Действия с объектом" aria-label="Действия с объектом">•••</button>
-                        <div class="object-menu-dropdown" id="object-menu-{{ $object->id }}" hidden>
-                            <button type="button" data-name="{{ $object->name }}"
-                                onclick="openRenameObjectModal({{ $object->id }}, this.dataset.name)">Переименовать</button>
-                            <button type="button"
-                                onclick="openSectionModal({{ $object->id }})">Добавить раздел</button>
-                            <button type="button" class="is-danger" data-name="{{ $object->name }}"
-                                onclick="deleteObject({{ $object->id }}, this.dataset.name)">Удалить объект</button>
-                        </div>
-                    </div>
-                </div>
-                <button class="object-collapse" type="button" onclick="toggleObject({{ $object->id }})"
-                    title="Свернуть объект" aria-label="Свернуть объект" aria-expanded="true">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
-                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="m6 15 6-6 6 6"/>
-                    </svg>
-                </button>
-            </div>
-
-            <div class="object-sections" id="object-sections-{{ $object->id }}">
-                @foreach($object->sections as $section)
-                    @php($items = $object->items->where('section', $section->key))
-                    <div class="object-section">
-                        <div class="object-section-header">
-                            <div class="task-section-label">
-                                {{ $section->name }}
-                                <span class="task-section-count task-progress-count">{{ $items->where('is_completed', true)->count() }}/{{ $items->count() }}</span>
-                            </div>
-                            <div class="object-section-controls">
-                                <button type="button" class="object-add-item"
-                                    data-section="{{ $section->key }}"
-                                    data-name="{{ $section->name }}"
-                                    onclick="openItemModal({{ $object->id }}, this.dataset.section, this.dataset.name)"
-                                    title="Добавить пункт">+</button>
-                                <div class="object-section-actions">
-                                    <button type="button" class="object-section-action"
-                                        data-name="{{ $section->name }}"
-                                        onclick="openSectionModal({{ $object->id }}, {{ $section->id }}, this.dataset.name)"
-                                        title="Переименовать раздел">✎</button>
-                                    <button type="button" class="object-section-action object-section-delete"
-                                        data-name="{{ $section->name }}"
-                                        onclick="deleteSection({{ $section->id }}, this.dataset.name, {{ $items->count() }})"
-                                        title="Удалить раздел">×</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="object-items {{ $items->isEmpty() ? 'is-empty' : '' }}">
-                            @foreach($items as $item)
-                                <div class="task-card object-item {{ $item->is_completed ? 'object-item-completed' : '' }}">
-                                    <button type="button" class="task-checkbox {{ $item->is_completed ? 'checked' : '' }}"
-                                        onclick="toggleObjectItem({{ $item->id }}, {{ $item->is_completed ? 'false' : 'true' }})"
-                                        aria-label="{{ $item->is_completed ? 'Вернуть пункт' : 'Отметить выполненным' }}">
-                                        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                                        </svg>
-                                    </button>
-                                    <div class="object-item-content">
-                                        <span class="task-title {{ $item->is_completed ? 'done' : '' }}">{{ $item->title }}</span>
-                                        @if($item->comment)
-                                            <div class="object-item-comment">{{ $item->comment }}</div>
-                                        @endif
-                                    </div>
-                                    @if($item->completed_at)
-                                        <span class="object-completed-date">{{ $item->completed_at->format('d.m.Y') }}</span>
-                                    @endif
-                                    @if($item->assignee)
-                                        @php($assigneeColor = $avatarColors[$item->assigned_to % count($avatarColors)])
-                                        <button type="button" class="object-assignee-avatar"
-                                            style="background: {{ $assigneeColor }}22; color: {{ $assigneeColor }}"
-                                            onclick="openAssigneeModal({{ $item->id }}, {{ $item->assigned_to }})"
-                                            title="Ответственный: {{ $item->assignee->name }}">
-                                            {{ $item->assignee->initials() }}
-                                        </button>
-                                    @else
-                                        <button type="button" class="object-assignee-avatar is-empty"
-                                            onclick="openAssigneeModal({{ $item->id }}, null)"
-                                            title="Назначить ответственного">+</button>
-                                    @endif
-                                    <button type="button" class="object-item-delete"
-                                        onclick="deleteObjectItem({{ $item->id }})"
-                                        title="Удалить пункт" aria-label="Удалить пункт">×</button>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-
-        </section>
-    @empty
-        <div class="empty-state">Объектов пока нет</div>
-    @endforelse
-</div>
-
-@if($objects->count() > 1)
-    <div class="objects-nav">
-        <button type="button" class="objects-nav-previous" onclick="scrollToObject(-1)"
-            title="Предыдущий объект" aria-label="Предыдущий объект">↑</button>
-        <button type="button" class="objects-nav-next" onclick="scrollToObject(1)">Следующий объект ↓</button>
-    </div>
-@endif
-
-<div id="trash-modal" class="modal-backdrop" style="display:none" onclick="closeTrashModal(event)">
-    <div class="modal trash-modal" onclick="event.stopPropagation()">
-        <div class="modal-title">Корзина</div>
-        <div class="trash-modal-list">
-            @forelse($deletedItems->groupBy('work_object_id') as $objectItems)
-                @php($deletedObject = $objectItems->first()->workObject)
-                @if($deletedObject)
-                    <div class="trash-object-group">
-                        <div class="trash-object-name">{{ $deletedObject->name }}</div>
-                        @foreach($objectItems as $item)
-                            @php($sectionName = $deletedObject->sections->firstWhere('key', $item->section)?->name ?? 'Удалённый раздел')
-                            <div class="object-trash-item">
-                                <div class="object-trash-item-content">
-                                    <span class="object-trash-item-title">{{ $item->title }}</span>
-                                    <span class="object-trash-section">{{ $sectionName }}</span>
-                                </div>
-                                <button type="button" class="object-restore-button"
-                                    onclick="restoreObjectItem({{ $item->id }})">Восстановить</button>
-                            </div>
-                        @endforeach
-                    </div>
-                @endif
-            @empty
-                <div class="trash-empty">Удалённых пунктов нет</div>
-            @endforelse
-        </div>
-        <button type="button" class="btn-cancel" onclick="closeTrashModal()">Закрыть</button>
-    </div>
-</div>
-
-<div id="object-modal" class="modal-backdrop" style="display:none" onclick="closeObjectModal(event)">
-    <div class="modal" onclick="event.stopPropagation()">
-        <div class="modal-title">Новый объект</div>
-        <div class="form-group">
-            <label class="form-label">Название объекта</label>
-            <input type="text" id="object-name" class="form-input" placeholder="Введите название">
-        </div>
-        <button type="button" class="btn-submit" onclick="createObject()">Создать объект</button>
-        <button type="button" class="btn-cancel" onclick="closeObjectModal()">Отмена</button>
-    </div>
-</div>
-
-<div id="rename-object-modal" class="modal-backdrop" style="display:none" onclick="closeRenameObjectModal(event)">
-    <div class="modal" onclick="event.stopPropagation()">
-        <div class="modal-title">Переименовать объект</div>
-        <div class="form-group">
-            <label class="form-label">Название объекта</label>
-            <input type="text" id="rename-object-name" class="form-input" placeholder="Введите название">
-        </div>
-        <button type="button" class="btn-submit" onclick="renameObject()">Сохранить</button>
-        <button type="button" class="btn-cancel" onclick="closeRenameObjectModal()">Отмена</button>
-    </div>
-</div>
-
-<div id="section-modal" class="modal-backdrop" style="display:none" onclick="closeSectionModal(event)">
-    <div class="modal" onclick="event.stopPropagation()">
-        <div class="modal-title" id="section-modal-title">Новый раздел</div>
-        <div class="form-group">
-            <label class="form-label">Название раздела</label>
-            <input type="text" id="section-name" class="form-input" placeholder="Введите название раздела">
-        </div>
-        <button type="button" class="btn-submit" id="section-submit" onclick="saveSection()">Добавить</button>
-        <button type="button" class="btn-cancel" onclick="closeSectionModal()">Отмена</button>
-    </div>
-</div>
-
-<div id="item-modal" class="modal-backdrop" style="display:none" onclick="closeItemModal(event)">
-    <div class="modal" onclick="event.stopPropagation()">
-        <div class="modal-title" id="item-modal-title">Новый пункт</div>
-        <div class="form-group">
-            <label class="form-label">Название</label>
-            <input type="text" id="item-title" class="form-input" placeholder="Что нужно добавить?">
-        </div>
-        <div class="form-group">
-            <label class="form-label">Комментарий</label>
-            <textarea id="item-comment" class="form-input" rows="3" placeholder="Дополнительная информация..."></textarea>
-        </div>
-        <div class="form-group">
-            <label class="form-label">Ответственный</label>
-            <div class="object-select-field">
-                <select id="item-assignee" class="form-input object-select">
-                    <option value="">Не назначен</option>
-                    @foreach($employees as $employee)
-                        <option value="{{ $employee->id }}">{{ $employee->name }}</option>
-                    @endforeach
-                </select>
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="m8 10 4 4 4-4"/>
-                </svg>
-            </div>
-        </div>
-        <button type="button" class="btn-submit" onclick="createObjectItem()">Добавить</button>
-        <button type="button" class="btn-cancel" onclick="closeItemModal()">Отмена</button>
-    </div>
-</div>
-
-<div id="assignee-modal" class="modal-backdrop" style="display:none" onclick="closeAssigneeModal(event)">
-    <div class="modal" onclick="event.stopPropagation()">
-        <div class="modal-title">Ответственный</div>
-        <div class="form-group">
-            <label class="form-label">Сотрудник</label>
-            <div class="object-select-field">
-                <select id="assignee-select" class="form-input object-select">
-                    <option value="">Не назначен</option>
-                    @foreach($employees as $employee)
-                        <option value="{{ $employee->id }}">{{ $employee->name }}</option>
-                    @endforeach
-                </select>
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="m8 10 4 4 4-4"/>
-                </svg>
-            </div>
-        </div>
-        <button type="button" class="btn-submit" onclick="saveAssignee()">Сохранить</button>
-        <button type="button" class="btn-cancel" onclick="closeAssigneeModal()">Отмена</button>
-    </div>
-</div>
-
 <style>
 .object-shortcuts {
     display: flex;
@@ -745,6 +473,280 @@
     .objects-nav { right: 18px; bottom: 18px; }
 }
 </style>
+
+<div class="objects-page-header">
+    <div class="objects-page-actions">
+        <button class="new-object-button" type="button" onclick="openObjectModal()">+ Новый объект</button>
+        <button class="trash-button" type="button" onclick="openTrashModal()"
+            title="Корзина" aria-label="Корзина">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 10v6M14 10v6"/>
+            </svg>
+        </button>
+    </div>
+</div>
+
+@if($objects->isNotEmpty())
+    <div class="object-shortcuts" aria-label="Быстрый переход к объекту">
+        @foreach($objects as $object)
+            <a class="object-shortcut-link" href="#object-{{ $object->id }}"
+                onclick="openObjectShortcut(event, {{ $object->id }})"
+                title="{{ $object->name }}">
+                <span class="object-shortcut-circle">
+                    <svg width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-2M9 9v.01M9 13v.01M9 17v.01M16 13v.01M16 17v.01"/>
+                    </svg>
+                    <span>{{ $object->items->where('is_completed', false)->count() }}/{{ $object->items->count() }}</span>
+                </span>
+                <span class="object-shortcut-name">{{ $object->name }}</span>
+            </a>
+        @endforeach
+    </div>
+@endif
+
+<div class="objects-list">
+    @forelse($objects as $object)
+        <section class="object-board" id="object-{{ $object->id }}" data-object-id="{{ $object->id }}">
+            <div class="object-board-header">
+                <div class="object-icon">
+                    <svg width="21" height="21" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-2M9 9v.01M9 13v.01M9 17v.01M16 13v.01M16 17v.01"/>
+                    </svg>
+                </div>
+                <div class="object-heading">
+                    <div class="object-name">{{ $object->name }}</div>
+                    <div class="object-count">{{ $object->items->where('is_completed', false)->count() }} активных пунктов</div>
+                </div>
+                <div class="object-actions">
+                    <div class="object-menu">
+                        <button class="object-menu-toggle" type="button"
+                            onclick="toggleObjectMenu(event, {{ $object->id }})"
+                            title="Действия с объектом" aria-label="Действия с объектом">•••</button>
+                        <div class="object-menu-dropdown" id="object-menu-{{ $object->id }}" hidden>
+                            <button type="button" data-name="{{ $object->name }}"
+                                onclick="openRenameObjectModal({{ $object->id }}, this.dataset.name)">Переименовать</button>
+                            <button type="button"
+                                onclick="openSectionModal({{ $object->id }})">Добавить раздел</button>
+                            <button type="button" class="is-danger" data-name="{{ $object->name }}"
+                                onclick="deleteObject({{ $object->id }}, this.dataset.name)">Удалить объект</button>
+                        </div>
+                    </div>
+                </div>
+                <button class="object-collapse" type="button" onclick="toggleObject({{ $object->id }})"
+                    title="Свернуть объект" aria-label="Свернуть объект" aria-expanded="true">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="m6 15 6-6 6 6"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="object-sections" id="object-sections-{{ $object->id }}">
+                @foreach($object->sections as $section)
+                    @php($items = $object->items->where('section', $section->key))
+                    <div class="object-section">
+                        <div class="object-section-header">
+                            <div class="task-section-label">
+                                {{ $section->name }}
+                                <span class="task-section-count task-progress-count">{{ $items->where('is_completed', true)->count() }}/{{ $items->count() }}</span>
+                            </div>
+                            <div class="object-section-controls">
+                                <button type="button" class="object-add-item"
+                                    data-section="{{ $section->key }}"
+                                    data-name="{{ $section->name }}"
+                                    onclick="openItemModal({{ $object->id }}, this.dataset.section, this.dataset.name)"
+                                    title="Добавить пункт">+</button>
+                                <div class="object-section-actions">
+                                    <button type="button" class="object-section-action"
+                                        data-name="{{ $section->name }}"
+                                        onclick="openSectionModal({{ $object->id }}, {{ $section->id }}, this.dataset.name)"
+                                        title="Переименовать раздел">✎</button>
+                                    <button type="button" class="object-section-action object-section-delete"
+                                        data-name="{{ $section->name }}"
+                                        onclick="deleteSection({{ $section->id }}, this.dataset.name, {{ $items->count() }})"
+                                        title="Удалить раздел">×</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="object-items {{ $items->isEmpty() ? 'is-empty' : '' }}">
+                            @foreach($items as $item)
+                                <div class="task-card object-item {{ $item->is_completed ? 'object-item-completed' : '' }}">
+                                    <button type="button" class="task-checkbox {{ $item->is_completed ? 'checked' : '' }}"
+                                        onclick="toggleObjectItem({{ $item->id }}, {{ $item->is_completed ? 'false' : 'true' }})"
+                                        aria-label="{{ $item->is_completed ? 'Вернуть пункт' : 'Отметить выполненным' }}">
+                                        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                    </button>
+                                    <div class="object-item-content">
+                                        <span class="task-title {{ $item->is_completed ? 'done' : '' }}">{{ $item->title }}</span>
+                                        @if($item->comment)
+                                            <div class="object-item-comment">{{ $item->comment }}</div>
+                                        @endif
+                                    </div>
+                                    @if($item->completed_at)
+                                        <span class="object-completed-date">{{ $item->completed_at->format('d.m.Y') }}</span>
+                                    @endif
+                                    @if($item->assignee)
+                                        @php($assigneeColor = $avatarColors[$item->assigned_to % count($avatarColors)])
+                                        <button type="button" class="object-assignee-avatar"
+                                            style="background: {{ $assigneeColor }}22; color: {{ $assigneeColor }}"
+                                            onclick="openAssigneeModal({{ $item->id }}, {{ $item->assigned_to }})"
+                                            title="Ответственный: {{ $item->assignee->name }}">
+                                            {{ $item->assignee->initials() }}
+                                        </button>
+                                    @else
+                                        <button type="button" class="object-assignee-avatar is-empty"
+                                            onclick="openAssigneeModal({{ $item->id }}, null)"
+                                            title="Назначить ответственного">+</button>
+                                    @endif
+                                    <button type="button" class="object-item-delete"
+                                        onclick="deleteObjectItem({{ $item->id }})"
+                                        title="Удалить пункт" aria-label="Удалить пункт">×</button>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+
+        </section>
+    @empty
+        <div class="empty-state">Объектов пока нет</div>
+    @endforelse
+</div>
+
+@if($objects->count() > 1)
+    <div class="objects-nav">
+        <button type="button" class="objects-nav-previous" onclick="scrollToObject(-1)"
+            title="Предыдущий объект" aria-label="Предыдущий объект">↑</button>
+        <button type="button" class="objects-nav-next" onclick="scrollToObject(1)">Следующий объект ↓</button>
+    </div>
+@endif
+
+<div id="trash-modal" class="modal-backdrop" style="display:none" onclick="closeTrashModal(event)">
+    <div class="modal trash-modal" onclick="event.stopPropagation()">
+        <div class="modal-title">Корзина</div>
+        <div class="trash-modal-list">
+            @forelse($deletedItems->groupBy('work_object_id') as $objectItems)
+                @php($deletedObject = $objectItems->first()->workObject)
+                @if($deletedObject)
+                    <div class="trash-object-group">
+                        <div class="trash-object-name">{{ $deletedObject->name }}</div>
+                        @foreach($objectItems as $item)
+                            @php($sectionName = $deletedObject->sections->firstWhere('key', $item->section)?->name ?? 'Удалённый раздел')
+                            <div class="object-trash-item">
+                                <div class="object-trash-item-content">
+                                    <span class="object-trash-item-title">{{ $item->title }}</span>
+                                    <span class="object-trash-section">{{ $sectionName }}</span>
+                                </div>
+                                <button type="button" class="object-restore-button"
+                                    onclick="restoreObjectItem({{ $item->id }})">Восстановить</button>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+            @empty
+                <div class="trash-empty">Удалённых пунктов нет</div>
+            @endforelse
+        </div>
+        <button type="button" class="btn-cancel" onclick="closeTrashModal()">Закрыть</button>
+    </div>
+</div>
+
+<div id="object-modal" class="modal-backdrop" style="display:none" onclick="closeObjectModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-title">Новый объект</div>
+        <div class="form-group">
+            <label class="form-label">Название объекта</label>
+            <input type="text" id="object-name" class="form-input" placeholder="Введите название">
+        </div>
+        <button type="button" class="btn-submit" onclick="createObject()">Создать объект</button>
+        <button type="button" class="btn-cancel" onclick="closeObjectModal()">Отмена</button>
+    </div>
+</div>
+
+<div id="rename-object-modal" class="modal-backdrop" style="display:none" onclick="closeRenameObjectModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-title">Переименовать объект</div>
+        <div class="form-group">
+            <label class="form-label">Название объекта</label>
+            <input type="text" id="rename-object-name" class="form-input" placeholder="Введите название">
+        </div>
+        <button type="button" class="btn-submit" onclick="renameObject()">Сохранить</button>
+        <button type="button" class="btn-cancel" onclick="closeRenameObjectModal()">Отмена</button>
+    </div>
+</div>
+
+<div id="section-modal" class="modal-backdrop" style="display:none" onclick="closeSectionModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-title" id="section-modal-title">Новый раздел</div>
+        <div class="form-group">
+            <label class="form-label">Название раздела</label>
+            <input type="text" id="section-name" class="form-input" placeholder="Введите название раздела">
+        </div>
+        <button type="button" class="btn-submit" id="section-submit" onclick="saveSection()">Добавить</button>
+        <button type="button" class="btn-cancel" onclick="closeSectionModal()">Отмена</button>
+    </div>
+</div>
+
+<div id="item-modal" class="modal-backdrop" style="display:none" onclick="closeItemModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-title" id="item-modal-title">Новый пункт</div>
+        <div class="form-group">
+            <label class="form-label">Название</label>
+            <input type="text" id="item-title" class="form-input" placeholder="Что нужно добавить?">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Комментарий</label>
+            <textarea id="item-comment" class="form-input" rows="3" placeholder="Дополнительная информация..."></textarea>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Ответственный</label>
+            <div class="object-select-field">
+                <select id="item-assignee" class="form-input object-select">
+                    <option value="">Не назначен</option>
+                    @foreach($employees as $employee)
+                        <option value="{{ $employee->id }}">{{ $employee->name }}</option>
+                    @endforeach
+                </select>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="m8 10 4 4 4-4"/>
+                </svg>
+            </div>
+        </div>
+        <button type="button" class="btn-submit" onclick="createObjectItem()">Добавить</button>
+        <button type="button" class="btn-cancel" onclick="closeItemModal()">Отмена</button>
+    </div>
+</div>
+
+<div id="assignee-modal" class="modal-backdrop" style="display:none" onclick="closeAssigneeModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-title">Ответственный</div>
+        <div class="form-group">
+            <label class="form-label">Сотрудник</label>
+            <div class="object-select-field">
+                <select id="assignee-select" class="form-input object-select">
+                    <option value="">Не назначен</option>
+                    @foreach($employees as $employee)
+                        <option value="{{ $employee->id }}">{{ $employee->name }}</option>
+                    @endforeach
+                </select>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="m8 10 4 4 4-4"/>
+                </svg>
+            </div>
+        </div>
+        <button type="button" class="btn-submit" onclick="saveAssignee()">Сохранить</button>
+        <button type="button" class="btn-cancel" onclick="closeAssigneeModal()">Отмена</button>
+    </div>
+</div>
+
+
 
 <script>
 let currentObjectId = null;
