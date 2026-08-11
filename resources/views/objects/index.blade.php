@@ -542,7 +542,7 @@
 .object-items { min-height: 18px; margin-top: 3px; }
 .object-item .task-checkbox {
     align-self: flex-start;
-    margin-top: 1px;
+    margin-top: 4px;
     padding: 0;
     background: #fff;
     border-color: var(--tappsk-blue);
