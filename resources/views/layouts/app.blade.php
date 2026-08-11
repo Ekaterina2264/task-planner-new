@@ -92,14 +92,16 @@
             display: flex; align-items: center; gap: 12px; padding: 4px 0;
             min-height: 30px; box-shadow: none; border-bottom: 0; transition: none;
         }
-        .task-card.task-priority-high .task-title {
-            font-weight: 500;
+        .task-card.task-priority-high {
+            margin-left: -16px;
+            margin-right: -16px;
+            padding-left: 16px;
+            padding-right: 16px;
+            border-radius: 6px;
+            background: #fff3f2;
         }
-        .task-card.task-priority-high .badge-high {
-            padding: 2px 8px;
-            border-radius: 20px;
-            background: #fff0ef;
-            color: #dc6f69;
+        .task-card.task-priority-high:hover {
+            background: #ffefee;
         }
 
         .task-card:hover {
