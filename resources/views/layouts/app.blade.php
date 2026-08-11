@@ -113,7 +113,7 @@
         .task-checkbox {
             width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid var(--tappsk-blue);
             display: flex; align-items: center; justify-content: center;
-            align-self: flex-start; margin-top: 3px;
+            align-self: flex-start; margin-top: 5px;
             cursor: pointer; flex-shrink: 0; transition: all 0.2s;
         }
         .task-checkbox:hover { border-color: #168fd9; }
