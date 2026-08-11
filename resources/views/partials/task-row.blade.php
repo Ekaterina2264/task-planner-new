@@ -1,4 +1,4 @@
-<div class="task-card" id="task-{{ $task->id }}" x-data="{ done: {{ $task->status === 'done' ? 'true' : 'false' }} }">
+<div class="task-card {{ $task->priority === 'high' ? 'task-priority-high' : '' }}" id="task-{{ $task->id }}" x-data="{ done: {{ $task->status === 'done' ? 'true' : 'false' }} }">
     <div
         class="task-checkbox"
         :class="{ 'checked': done }"
