@@ -406,7 +406,7 @@ function timingLabel(task) {
 }
 
 function taskCard(task, employeeId) {
-    return `<div class="task-card team-task-card" draggable="true" data-task-id="${task.id}" data-employee-id="${employeeId}">
+    return `<div class="task-card team-task-card ${task.priority === 'high' ? 'task-priority-high' : ''}" draggable="true" data-task-id="${task.id}" data-employee-id="${employeeId}">
         <div class="task-checkbox ${task.status === 'done' ? 'checked' : ''}" onclick="toggleTask(event, ${employeeId}, ${task.id}, this)" draggable="false">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
