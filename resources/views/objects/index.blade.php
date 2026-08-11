@@ -468,7 +468,10 @@
     .object-name { font-size: 18px; }
     .object-actions { gap: 2px; }
     .object-section-controls { opacity: 1; }
-    .object-item-delete { opacity: 1; }
+    .object-section-actions { display: none; }
+    .object-section-header.is-selected .object-section-actions { display: flex; }
+    .object-item-delete { opacity: 0; }
+    .object-item.is-selected .object-item-delete { opacity: 1; }
     .object-assignee-avatar.is-empty { opacity: 1; }
     .objects-nav { right: 18px; bottom: 18px; }
 }
@@ -1053,6 +1056,28 @@ function scrollToObject(direction) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    if (window.matchMedia('(max-width: 768px)').matches) {
+        document.querySelectorAll('.object-section-header').forEach(header => {
+            header.addEventListener('click', event => {
+                if (event.target.closest('button')) return;
+                document.querySelectorAll('.object-section-header.is-selected').forEach(item => {
+                    if (item !== header) item.classList.remove('is-selected');
+                });
+                header.classList.toggle('is-selected');
+            });
+        });
+
+        document.querySelectorAll('.object-item').forEach(item => {
+            item.addEventListener('click', event => {
+                if (event.target.closest('button')) return;
+                document.querySelectorAll('.object-item.is-selected').forEach(row => {
+                    if (row !== item) row.classList.remove('is-selected');
+                });
+                item.classList.toggle('is-selected');
+            });
+        });
+    }
+
     const collapsed = new Set(JSON.parse(localStorage.getItem('collapsed-objects') || '[]'));
     collapsed.forEach(objectId => {
         const sections = document.getElementById(`object-sections-${objectId}`);
