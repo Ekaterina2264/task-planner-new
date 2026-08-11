@@ -366,6 +366,16 @@
                 font-size: 16px;
             }
 
+            .personal-task-section .task-priority-slot {
+                display: none;
+            }
+
+            .personal-task-section .task-badges {
+                grid-template-columns: 72px;
+                width: 72px;
+                margin-left: auto;
+            }
+
             .fab {
                 left: 0;
                 height: 56px;
