@@ -591,13 +591,24 @@ function bindTouchDrag(card) {
         const zone = element?.closest('.team-task-section[data-can-drop="1"]');
         targetZone = zone && Number(zone.dataset.employeeId) === Number(draggedTask.assigned_to) ? zone : null;
         targetZone?.classList.add('drop-active');
+
+        if (targetZone) {
+            const dropZone = targetZone.querySelector('.team-drop-zone');
+            const cards = [...dropZone.querySelectorAll('.team-task-card:not(.dragging)')];
+            const before = cards.find(item => touch.clientY < item.getBoundingClientRect().top + item.offsetHeight / 2);
+            dropZone.insertBefore(card, before || null);
+        }
     }, { passive: false });
 
     card.addEventListener('touchend', () => {
         clearTimeout(timer);
         card.classList.remove('dragging');
         clearDropHighlights();
-        if (active && targetZone) moveTask(draggedTask, targetZone.dataset.teamSection);
+        if (active && targetZone) {
+            const orderedTaskIds = [...targetZone.querySelectorAll('.team-task-card')]
+                .map(item => Number(item.dataset.taskId));
+            moveTask(draggedTask, targetZone.dataset.teamSection, orderedTaskIds);
+        }
         if (active) suppressTaskClickUntil = Date.now() + 500;
         active = false;
         targetZone = null;
