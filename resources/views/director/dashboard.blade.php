@@ -405,17 +405,20 @@ function timingLabel(task) {
 
 function taskCard(task, employeeId) {
     return `<div class="task-card team-task-card" draggable="true" data-task-id="${task.id}" data-employee-id="${employeeId}">
-        <div class="task-checkbox" onclick="toggleTask(event, ${employeeId}, ${task.id}, this)" draggable="false">
+        <div class="task-checkbox ${task.status === 'done' ? 'checked' : ''}" onclick="toggleTask(event, ${employeeId}, ${task.id}, this)" draggable="false">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
             </svg>
         </div>
         <div style="flex:1;min-width:140px;cursor:pointer" onclick="openEditModal(event, ${employeeId}, ${task.id})">
-            <span class="task-title">${escapeHtml(task.title)}</span>
+            <span class="task-title ${task.status === 'done' ? 'done' : ''}">${escapeHtml(task.title)}</span>
             ${task.object_item?.work_object ? `<div style="font-size:11px;color:var(--tappsk-blue);margin-top:3px">Объект: ${escapeHtml(task.object_item.work_object.name)}</div>` : ''}
             ${task.comment ? `<div style="font-size:12px;color:#aaa;margin-top:2px">${escapeHtml(task.comment)}</div>` : ''}
         </div>
         <div class="task-badges">\n            <span class="task-priority-slot">${priorityLabel(task.priority)}</span>\n            <span class="task-date-slot">${timingLabel(task)}</span>\n        </div>
+        <button type="button" class="task-delete" draggable="false"
+            onclick="deleteTeamTask(event, ${employeeId}, ${task.id})"
+            title="Удалить задачу" aria-label="Удалить задачу">×</button>
     </div>`;
 }
 
@@ -428,9 +431,9 @@ function renderBoard() {
     }
 
     board.innerHTML = employees.map(employee => {
-        const groups = groupTasks(employee.tasks);
-        const allGroups = groupTasks(employee.tasks, true);
-        const openCount = Object.values(groups).reduce((count, tasks) => count + tasks.length, 0);
+        const groups = groupTasks(employee.tasks, true);
+        const allGroups = groups;
+        const openCount = employee.tasks.filter(task => task.status !== 'done').length;
         const color = avatarColor(employee.id);
 
         const collapsed = collapsedEmployees.has(employee.id);
@@ -601,6 +604,26 @@ function getTask(employeeId, taskId) {
 
 function clearDropHighlights() {
     document.querySelectorAll('.drop-active').forEach(zone => zone.classList.remove('drop-active'));
+}
+
+async function deleteTeamTask(event, employeeId, taskId) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!confirm('Удалить задачу?')) return;
+
+    const response = await fetch(`/tasks/${taskId}`, {
+        method: 'DELETE',
+        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+    });
+
+    if (!response.ok) {
+        alert('Не удалось удалить задачу. Попробуйте ещё раз.');
+        return;
+    }
+
+    const employee = employees.find(item => item.id === Number(employeeId));
+    if (employee) employee.tasks = employee.tasks.filter(task => task.id !== Number(taskId));
+    renderBoard();
 }
 
 async function toggleTask(event, employeeId, taskId, checkbox) {
