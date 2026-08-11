@@ -308,8 +308,13 @@
 @media (max-width: 768px) {
     .employee-board { margin-bottom: 34px; }
     .employee-board-name { font-size: 18px; }
-    .team-task-card { align-items: flex-start; flex-wrap: wrap; }
-    .team-task-card .task-badges { margin-left: 32px; }
+    .team-task-card { align-items: flex-start; flex-wrap: nowrap; }
+    .team-task-card .task-priority-slot { display: none; }
+    .team-task-card .task-badges {
+        grid-template-columns: 72px;
+        width: 72px;
+        margin-left: auto;
+    }
     .team-nav { right: 18px; bottom: 18px; }
 }
 </style>
