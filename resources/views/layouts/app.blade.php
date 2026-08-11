@@ -278,10 +278,13 @@
             background: var(--accent-light);
             border-color: var(--accent);
         }
-        .personal-task-section .task-card {
+        .personal-task-section .task-card,
+        .personal-task-section .task-card * {
             cursor: grab;
             touch-action: pan-y;
             user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
         }
         .personal-task-section .task-card.personal-dragging { opacity: .35; }
         .personal-task-section:first-of-type { margin-top: 30px; }
@@ -618,6 +621,9 @@ function initPersonalTaskDrag() {
             clearHighlights();
         });
 
+        card.addEventListener('contextmenu', event => event.preventDefault());
+        card.addEventListener('selectstart', event => event.preventDefault());
+
         let timer = null;
         let active = false;
         let startX = 0;
@@ -647,6 +653,12 @@ function initPersonalTaskDrag() {
             clearHighlights();
             touchTarget = document.elementFromPoint(touch.clientX, touch.clientY)?.closest('.personal-task-section') || null;
             touchTarget?.classList.add('personal-drop-active');
+
+            if (touchTarget) {
+                const cards = [...touchTarget.querySelectorAll('.task-card:not(.personal-dragging)')];
+                const before = cards.find(item => touch.clientY < item.getBoundingClientRect().top + item.offsetHeight / 2);
+                touchTarget.insertBefore(card, before || null);
+            }
         }, { passive: false });
 
         card.addEventListener('touchend', () => {
@@ -655,7 +667,6 @@ function initPersonalTaskDrag() {
             clearHighlights();
             if (active) window.personalSuppressClickUntil = Date.now() + 500;
             if (active && touchTarget) {
-                touchTarget.appendChild(card);
                 movePersonalTask(draggedId, touchTarget.dataset.personalSection, sourceSection);
             }
             draggedId = null;
