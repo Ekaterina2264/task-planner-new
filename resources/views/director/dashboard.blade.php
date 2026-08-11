@@ -267,6 +267,13 @@
     touch-action: pan-y;
     cursor: grab;
     user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
+.team-task-card * {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
 }
 .team-task-card:active {
     cursor: grabbing;
@@ -559,6 +566,9 @@ function bindDragAndDrop() {
 }
 
 function bindTouchDrag(card) {
+    card.addEventListener('contextmenu', event => event.preventDefault());
+    card.addEventListener('selectstart', event => event.preventDefault());
+
     let timer = null;
     let active = false;
     let startX = 0;
