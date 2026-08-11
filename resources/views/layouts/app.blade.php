@@ -120,6 +120,14 @@
             font-weight: 400;
         }
         .task-title.done { text-decoration: line-through; color: #bbb; }
+        .task-delete {
+            width: 28px; height: 28px; margin-left: 5px; border: 0; border-radius: 50%;
+            background: transparent; color: #b8b8c2; font-size: 20px; line-height: 1;
+            cursor: pointer; opacity: 0;
+            transition: opacity .15s ease, color .15s ease, background .15s ease;
+        }
+        .task-card:hover .task-delete, .task-delete:focus { opacity: 1; }
+        .task-delete:hover { color: #e05d68; background: #fff1f2; }
         .task-badges {
             display: grid;
             grid-template-columns: 76px 72px;
@@ -440,6 +448,35 @@ function toggleSidebar() {
 function closeSidebar() {
     document.querySelector('.sidebar').classList.remove('open');
     document.getElementById('sidebar-overlay').classList.remove('open');
+}
+
+async function deletePersonalTask(taskId, button) {
+    if (!confirm('Удалить задачу?')) return;
+
+    const card = button.closest('.task-card');
+    const section = card?.closest('.personal-task-section');
+    const wasDone = card?.querySelector('.task-checkbox')?.classList.contains('checked');
+
+    const response = await fetch(`/tasks/${taskId}`, {
+        method: 'DELETE',
+        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+    });
+
+    if (!response.ok) {
+        alert('Не удалось удалить задачу. Попробуйте ещё раз.');
+        return;
+    }
+
+    const counter = section?.querySelector('.task-progress-count');
+    if (counter) {
+        const total = Math.max(0, Number(counter.dataset.total || 0) - 1);
+        const done = Math.max(0, Number(counter.dataset.done || 0) - (wasDone ? 1 : 0));
+        counter.dataset.total = total;
+        counter.dataset.done = done;
+        counter.textContent = `${done}/${total}`;
+    }
+
+    card?.remove();
 }
 
 function personalLocalDate(offset = 0) {
