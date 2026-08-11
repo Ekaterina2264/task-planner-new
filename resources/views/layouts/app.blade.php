@@ -92,6 +92,28 @@
             display: flex; align-items: center; gap: 12px; padding: 4px 0;
             min-height: 30px; box-shadow: none; border-bottom: 0; transition: none;
         }
+        .task-card.task-priority-high {
+            position: relative;
+            margin: 2px 0;
+            padding-left: 12px;
+            padding-right: 10px;
+            border-radius: 7px;
+            background: #fff6f5;
+        }
+        .task-card.task-priority-high::before {
+            content: "";
+            position: absolute;
+            top: 7px;
+            bottom: 7px;
+            left: 0;
+            width: 3px;
+            border-radius: 3px;
+            background: #e98b86;
+        }
+        .task-card.task-priority-high:hover {
+            background: #fff0ef;
+        }
+
         .task-card:hover {
             box-shadow: none;
             background: #eaf8ff;
