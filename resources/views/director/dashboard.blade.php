@@ -419,7 +419,6 @@ function taskCard(task, employeeId) {
         </div>
         <div class="task-badges">\n            <span class="task-priority-slot">${priorityLabel(task.priority)}</span>\n            <span class="task-date-slot">${timingLabel(task)}</span>\n        </div>
         <button type="button" class="task-delete" draggable="false"
-            style="${currentUserIsDirector || Number(task.assigned_to) === currentUserId || Number(task.created_by) === currentUserId ? '' : 'display:none'}"
             onclick="deleteTeamTask(event, ${employeeId}, ${task.id})"
             title="Удалить задачу" aria-label="Удалить задачу">×</button>
     </div>`;
