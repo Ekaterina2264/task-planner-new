@@ -56,4 +56,8 @@
             @endif
         </span>
     </div>
+
+    <button type="button" class="task-delete"
+        x-on:click.stop="deletePersonalTask({{ $task->id }}, $el)"
+        title="Удалить задачу" aria-label="Удалить задачу">×</button>
 </div>
