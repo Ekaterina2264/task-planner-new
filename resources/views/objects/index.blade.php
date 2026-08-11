@@ -225,7 +225,11 @@
 }
 .object-section-header .task-section-label {
     margin: 0;
-    font-size: 21px;
+    font-family: "Tappsk Bebas", sans-serif;
+    font-size: 28px;
+    font-weight: 400;
+    letter-spacing: .5px;
+    color: var(--tappsk-blue);
 }
 .object-section-controls {
     display: flex;
@@ -264,9 +268,6 @@
     font-size: 19px;
     cursor: pointer;
 }
-.object-section:nth-child(3n + 1) .task-section-label { color: var(--tappsk-blue); }
-.object-section:nth-child(3n + 2) .task-section-label { color: var(--tappsk-cyan); }
-.object-section:nth-child(3n) .task-section-label { color: var(--tappsk-muted); }
 .object-items { min-height: 18px; margin-top: 3px; }
 .object-item .task-checkbox {
     align-self: flex-start;
@@ -469,7 +470,6 @@
     .object-section-controls { opacity: 1; }
     .object-item-delete { opacity: 1; }
     .object-assignee-avatar.is-empty { opacity: 1; }
-    .object-section-header .task-section-label { font-size: 14px; letter-spacing: .5px; }
     .objects-nav { right: 18px; bottom: 18px; }
 }
 </style>
