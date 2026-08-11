@@ -93,24 +93,14 @@
             min-height: 30px; box-shadow: none; border-bottom: 0; transition: none;
         }
         .task-card.task-priority-high {
-            position: relative;
-            margin: 2px 0;
-            padding-left: 12px;
-            padding-right: 10px;
-            border-radius: 7px;
+            border-radius: 6px;
             background: #fff6f5;
         }
-        .task-card.task-priority-high::before {
-            content: "";
-            position: absolute;
-            top: 7px;
-            bottom: 7px;
-            left: 0;
-            width: 3px;
-            border-radius: 3px;
-            background: #e98b86;
-        }
         .task-card.task-priority-high:hover {
+            margin-left: 0;
+            margin-right: 0;
+            padding-left: 0;
+            padding-right: 0;
             background: #fff0ef;
         }
 
