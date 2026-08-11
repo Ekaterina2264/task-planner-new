@@ -116,6 +116,7 @@
             align-self: flex-start; margin-top: 5px;
             cursor: pointer; flex-shrink: 0; transition: all 0.2s;
         }
+        .task-checkbox.has-details { margin-top: 1px; }
         .task-checkbox:hover { border-color: #168fd9; }
         .task-checkbox.checked { background: var(--tappsk-blue); border-color: var(--tappsk-blue); }
         .task-checkbox svg { width: 10px; height: 10px; color: #fff; display: none; }
