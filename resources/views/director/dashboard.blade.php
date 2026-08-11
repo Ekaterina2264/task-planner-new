@@ -315,6 +315,8 @@
 </style>
 
 <script>
+const currentUserId = {{ auth()->id() }};
+const currentUserIsDirector = {{ auth()->user()->isDirector() ? 'true' : 'false' }};
 const avatarColors = ['#7c6ff7','#38c97b','#ff5c5c','#f4a223','#2f86d4','#e040fb'];
 const sections = [
     ['overdue', 'Важное', true, true],
@@ -417,6 +419,7 @@ function taskCard(task, employeeId) {
         </div>
         <div class="task-badges">\n            <span class="task-priority-slot">${priorityLabel(task.priority)}</span>\n            <span class="task-date-slot">${timingLabel(task)}</span>\n        </div>
         <button type="button" class="task-delete" draggable="false"
+            style="${currentUserIsDirector || Number(task.assigned_to) === currentUserId || Number(task.created_by) === currentUserId ? '' : 'display:none'}"
             onclick="deleteTeamTask(event, ${employeeId}, ${task.id})"
             title="Удалить задачу" aria-label="Удалить задачу">×</button>
     </div>`;
