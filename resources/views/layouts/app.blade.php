@@ -77,7 +77,7 @@
         .task-section { margin-bottom: 0; }
         .task-section-label {
             font-family: "Tappsk Bebas", sans-serif;
-            font-size: 25px; font-weight: 400; text-transform: uppercase; letter-spacing: .15px;
+            font-size: 28px; font-weight: 400; text-transform: uppercase; letter-spacing: .5px;
             color: var(--tappsk-cyan); margin-bottom: 3px; margin-top: 10px; display: flex; align-items: center; gap: 8px;
         }
         .task-section-label.overdue { color: #ff5c5c; }
@@ -89,8 +89,8 @@
         .task-progress-count { min-width: 40px; text-align: center; }
         .task-card {
             background: transparent; border-radius: 0; margin-bottom: 0;
-            display: flex; align-items: center; gap: 12px; padding: 4px 0;
-            min-height: 30px; box-shadow: none; border-bottom: 0; transition: none;
+            display: flex; align-items: center; gap: 12px; padding: 2px 0;
+            min-height: 26px; box-shadow: none; border-bottom: 0; transition: none;
         }
         .task-card.task-priority-high {
             margin-left: -16px;
