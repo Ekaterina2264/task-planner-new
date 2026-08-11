@@ -67,10 +67,13 @@ Route::middleware(['auth'])->group(function () {
             'tomorrow' => $allTasks->filter(fn($t) => $t->timing === 'date' && $t->due_date && $t->due_date->startOfDay()->eq($tomorrow)),
             'later' => $allTasks->filter(fn($t) => $t->timing === 'later' || ($t->timing === 'date' && $t->due_date && $t->due_date->startOfDay()->gt($tomorrow))),
         ];
-        $overdue = $allBySection['overdue']->where('status', 'new');
-        $todayT = $allBySection['today']->where('status', 'new');
-        $tomorrowT = $allBySection['tomorrow']->where('status', 'new');
-        $laterT = $allBySection['later']->where('status', 'new');
+        $visibleSectionTasks = fn ($sectionTasks) => $sectionTasks->filter(
+            fn ($task) => $task->status !== 'done' || $task->updated_at->isToday()
+        );
+        $overdue = $visibleSectionTasks($allBySection['overdue']);
+        $todayT = $visibleSectionTasks($allBySection['today']);
+        $tomorrowT = $visibleSectionTasks($allBySection['tomorrow']);
+        $laterT = $visibleSectionTasks($allBySection['later']);
         $sectionProgress = collect($allBySection)->map(function ($sectionTasks) {
             $visibleTasks = $sectionTasks->filter(fn($task) => $task->status !== 'done'
                 || $task->updated_at->isToday());
@@ -91,6 +94,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/tasks', [TaskController::class, 'store'])->name('tasks.store');
     Route::patch('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
     Route::patch('/tasks/{task}/move', [TaskController::class, 'move'])->name('tasks.move');
+    Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
 
     // Директор — API
     Route::get('/api/employees', [TaskController::class, 'employees'])->name('api.employees');
