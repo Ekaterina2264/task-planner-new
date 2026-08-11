@@ -646,6 +646,7 @@ async function toggleTask(event, employeeId, taskId, checkbox) {
 
     if (response.ok) {
         task.status = completed ? 'done' : 'new';
+        task.updated_at = new Date().toISOString();
         renderBoard();
         return;
     }
