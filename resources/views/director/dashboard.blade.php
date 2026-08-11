@@ -719,7 +719,7 @@ async function moveTask(task, section, orderedTaskIds = null) {
 
     const updates = {
         overdue: { timing: 'date', due_date: localDate(-1) },
-        today: { timing: 'today', due_date: null },
+        today: { timing: 'today', due_date: localDate() },
         tomorrow: { timing: 'date', due_date: localDate(1) },
         later: { timing: 'later', due_date: null },
     }[section];
