@@ -1,6 +1,6 @@
 <div class="task-card {{ $task->priority === 'high' ? 'task-priority-high' : '' }}" id="task-{{ $task->id }}" x-data="{ done: {{ $task->status === 'done' ? 'true' : 'false' }} }">
     <div
-        class="task-checkbox"
+        class="task-checkbox {{ ($task->comment || $task->objectItem?->workObject) ? 'has-details' : '' }}"
         :class="{ 'checked': done }"
         @click.stop="
             done = !done;
