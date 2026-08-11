@@ -111,13 +111,13 @@
             padding-right: 16px;
         }
         .task-checkbox {
-            width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid #35b8df;
+            width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid var(--tappsk-blue);
             display: flex; align-items: center; justify-content: center;
-            align-self: flex-start; margin-top: 2px;
+            align-self: flex-start; margin-top: 3px;
             cursor: pointer; flex-shrink: 0; transition: all 0.2s;
         }
-        .task-checkbox:hover { border-color: #159fca; }
-        .task-checkbox.checked { background: #35b8df; border-color: #35b8df; }
+        .task-checkbox:hover { border-color: #168fd9; }
+        .task-checkbox.checked { background: var(--tappsk-blue); border-color: var(--tappsk-blue); }
         .task-checkbox svg { width: 10px; height: 10px; color: #fff; display: none; }
         .task-checkbox.checked svg { display: block; }
         .task-title {
