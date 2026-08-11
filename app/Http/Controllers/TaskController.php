@@ -157,6 +157,22 @@ class TaskController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function destroy(Task $task)
+    {
+        $user = auth()->user();
+        abort_unless(
+            $user->isDirector() || $task->assigned_to === $user->id || $task->created_by === $user->id,
+            403
+        );
+
+        $title = $task->title;
+        $task->delete();
+
+        ActivityLog::record('task.deleted', "Удалена задача «{$title}»");
+
+        return response()->json(['success' => true]);
+    }
+
     public function employees()
     {
         $employees = User::query()
