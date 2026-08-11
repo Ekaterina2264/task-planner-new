@@ -159,12 +159,6 @@ class TaskController extends Controller
 
     public function destroy(Task $task)
     {
-        $user = auth()->user();
-        abort_unless(
-            $user->isDirector() || $task->assigned_to === $user->id || $task->created_by === $user->id,
-            403
-        );
-
         $title = $task->title;
         $task->delete();
 
