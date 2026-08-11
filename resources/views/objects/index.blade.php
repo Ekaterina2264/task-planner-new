@@ -541,10 +541,16 @@
 .object-section:nth-child(3n) .task-section-label { color: var(--tappsk-muted); }
 .object-items { min-height: 18px; margin-top: 3px; }
 .object-item .task-checkbox {
+    align-self: flex-start;
+    margin-top: 1px;
     padding: 0;
     background: #fff;
+    border-color: var(--tappsk-blue);
 }
-.object-item .task-checkbox.checked { background: var(--accent); }
+.object-item .task-checkbox.checked {
+    background: var(--tappsk-blue);
+    border-color: var(--tappsk-blue);
+}
 .object-item-completed { order: 2; }
 .object-item-content { flex: 1; min-width: 0; }
 .object-item-comment {
