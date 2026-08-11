@@ -100,9 +100,6 @@
             border-radius: 6px;
             background: #fff3f2;
         }
-        .task-card.task-priority-high:hover {
-            background: #ffefee;
-        }
 
         .task-card:hover {
             box-shadow: none;
