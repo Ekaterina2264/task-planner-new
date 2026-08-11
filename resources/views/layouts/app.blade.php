@@ -98,7 +98,7 @@
             padding-left: 16px;
             padding-right: 16px;
             border-radius: 6px;
-            background: #fff3f2;
+            background: #fff8f7;
         }
 
         .task-card:hover {
