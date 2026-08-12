@@ -68,14 +68,15 @@ Route::middleware(['auth'])->group(function () {
             'later' => $allTasks->filter(fn($t) => $t->timing === 'later' || ($t->timing === 'date' && $t->due_date && $t->due_date->startOfDay()->gt($tomorrow))),
         ];
         $visibleSectionTasks = fn ($sectionTasks) => $sectionTasks->filter(
-            fn ($task) => $task->status !== 'done' || $task->updated_at->gte(today()->subDay())
+            fn ($task) => $task->status !== 'done' || $task->updated_at->isToday()
         );
         $overdue = $visibleSectionTasks($allBySection['overdue']);
         $todayT = $visibleSectionTasks($allBySection['today']);
         $tomorrowT = $visibleSectionTasks($allBySection['tomorrow']);
         $laterT = $visibleSectionTasks($allBySection['later']);
-        $sectionProgress = collect($allBySection)->map(function ($sectionTasks) use ($visibleSectionTasks) {
-            $visibleTasks = $visibleSectionTasks($sectionTasks);
+        $sectionProgress = collect($allBySection)->map(function ($sectionTasks) {
+            $visibleTasks = $sectionTasks->filter(fn($task) => $task->status !== 'done'
+                || $task->updated_at->isToday());
 
             return [
                 'done' => $visibleTasks->where('status', 'done')->count(),
