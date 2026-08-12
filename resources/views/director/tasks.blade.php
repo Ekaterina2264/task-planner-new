@@ -136,12 +136,31 @@ function closeModal(e) { if (!e || e.target === document.getElementById('task-mo
 function setPriority(val) { priority = val; document.querySelectorAll('#task-modal .priority-pill').forEach(p => { p.className = 'priority-pill'; if (p.dataset.val === val) p.classList.add('active-' + val); }); }
 function setTiming(val) { timing = val; document.querySelectorAll('#task-modal .timing-pill').forEach(p => p.classList.toggle('active', p.dataset.val === val)); document.getElementById('date-field').style.display = val === 'date' ? 'block' : 'none'; }
 async function submitTask() {
+    if (window.taskCreatePending) return;
     const title = document.getElementById('task-title').value.trim();
     if (!title) return;
+    const submitButton = document.querySelector('#task-modal .btn-submit');
+    window.taskCreatePending = true;
+    submitButton.disabled = true;
+    submitButton.textContent = 'Сохраняем…';
     const body = { title, priority, timing, assigned_to: {{ auth()->id() }}, comment: document.getElementById('task-comment').value };
     if (timing === 'date') body.due_date = document.getElementById('task-date').value;
-    await fetch('/tasks', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }, body: JSON.stringify(body) });
-    window.location.reload();
+    try {
+        const response = await fetch('/tasks', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }, body: JSON.stringify(body) });
+        if (!response.ok) throw new Error('Не удалось создать задачу');
+        closeModal();
+        document.getElementById('task-title').value = '';
+        document.getElementById('task-comment').value = '';
+        window.taskCreatePending = false;
+        submitButton.disabled = false;
+        submitButton.textContent = 'Создать задачу';
+        if (response.headers.get('X-Tasksk-Queued') !== '1') window.location.reload();
+    } catch (error) {
+        alert(error.message);
+        window.taskCreatePending = false;
+        submitButton.disabled = false;
+        submitButton.textContent = 'Создать задачу';
+    }
 }
 function openEditModal(id, title, priority, timing, date, comment, assignedTo) {
     document.getElementById('edit-task-id').value = id;

@@ -63,6 +63,22 @@ function updateConnectionState() {
     showConnectionNotice("Офлайн-режим: изменения отправятся после подключения", true);
 }
 
+async function checkServerConnection() {
+    try {
+        const response = await fetch(`/offline-status-probe?time=${Date.now()}`, {
+            method: "HEAD",
+            cache: "no-store",
+        });
+        if (response.status !== 503) return;
+    } catch {
+        // A rejected probe also means that the application server is unreachable.
+    }
+
+    const notice = ensureConnectionNotice();
+    notice.dataset.offline = "true";
+    showConnectionNotice("Офлайн-режим: изменения отправятся после подключения", true);
+}
+
 window.addEventListener("online", updateConnectionState);
 window.addEventListener("offline", updateConnectionState);
 
@@ -80,6 +96,7 @@ if ("serviceWorker" in navigator) {
                     .filter(Boolean),
             });
             updateConnectionState();
+            await checkServerConnection();
         } catch (error) {
             console.error("Не удалось включить офлайн-режим", error);
         }
@@ -87,7 +104,14 @@ if ("serviceWorker" in navigator) {
 
     navigator.serviceWorker.addEventListener("message", (event) => {
         if (event.data?.type === "REQUEST_QUEUED") {
+            const notice = ensureConnectionNotice();
+            notice.dataset.offline = "true";
             showConnectionNotice("Изменение сохранено и отправится после подключения", true);
+        }
+        if (event.data?.type === "OFFLINE_ACTIVE") {
+            const notice = ensureConnectionNotice();
+            notice.dataset.offline = "true";
+            showConnectionNotice("Офлайн-режим: изменения отправятся после подключения", true);
         }
         if (event.data?.type === "QUEUE_SYNCED") {
             showConnectionNotice("Офлайн-изменения синхронизированы");

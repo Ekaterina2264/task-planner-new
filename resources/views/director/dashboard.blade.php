@@ -833,8 +833,13 @@ function setTiming(value) {
 }
 
 async function submitTask() {
+    if (window.taskCreatePending) return;
     const title = document.getElementById('task-title').value.trim();
     if (!title || !currentEmpId) return;
+    const submitButton = document.querySelector('#task-modal .btn-submit');
+    window.taskCreatePending = true;
+    submitButton.disabled = true;
+    submitButton.textContent = 'Сохраняем…';
 
     const body = {
         title,
@@ -855,8 +860,16 @@ async function submitTask() {
         closeModal();
         document.getElementById('task-title').value = '';
         document.getElementById('task-comment').value = '';
-        await loadTeam();
+        window.taskCreatePending = false;
+        submitButton.disabled = false;
+        submitButton.textContent = 'Создать задачу';
+        if (response.headers.get('X-Tasksk-Queued') !== '1') await loadTeam();
+        return;
     }
+
+    window.taskCreatePending = false;
+    submitButton.disabled = false;
+    submitButton.textContent = 'Создать задачу';
 }
 
 document.addEventListener('keydown', event => {

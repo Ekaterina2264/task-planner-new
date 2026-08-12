@@ -1,4 +1,4 @@
-const VERSION = "tasksk-v1";
+const VERSION = "tasksk-v2";
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGE_CACHE = `${VERSION}-pages`;
 const DB_NAME = "tasksk-offline";
@@ -70,6 +70,7 @@ async function networkFirstPage(request) {
         }
         return response;
     } catch {
+        await broadcast("OFFLINE_ACTIVE");
         return (await caches.match(request)) || (await caches.match("/dashboard")) || (await caches.match("/offline.html"));
     }
 }
@@ -81,6 +82,7 @@ async function networkFirst(request, cacheName) {
         return response;
     } catch {
         const cached = await caches.match(request);
+        await broadcast("OFFLINE_ACTIVE");
         return cached || new Response(JSON.stringify({ offline: true }), { status: 503, headers: { "Content-Type": "application/json" } });
     }
 }
@@ -93,6 +95,7 @@ async function cacheFirst(request) {
         if (response.ok) (await caches.open(STATIC_CACHE)).put(request, response.clone());
         return response;
     } catch {
+        await broadcast("OFFLINE_ACTIVE");
         return new Response("", { status: 503 });
     }
 }

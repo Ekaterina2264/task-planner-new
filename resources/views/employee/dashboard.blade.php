@@ -112,8 +112,14 @@ function setTiming(val) {
     document.getElementById('date-field').style.display = val === 'date' ? 'block' : 'none';
 }
 async function submitTask() {
+    if (window.taskCreatePending) return;
     const title = document.getElementById('task-title').value.trim();
     if (!title) { document.getElementById('task-title').focus(); return; }
+
+    const submitButton = document.querySelector('#task-modal .btn-submit');
+    window.taskCreatePending = true;
+    submitButton.disabled = true;
+    submitButton.textContent = 'Сохраняем…';
 
     const body = {
         title,
@@ -124,12 +130,27 @@ async function submitTask() {
     };
     if (timing === 'date') body.due_date = document.getElementById('task-date').value;
 
-    await fetch('{{ route("tasks.store") }}', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-        body: JSON.stringify(body)
-    });
-    window.location.reload();
+    try {
+        const response = await fetch('{{ route("tasks.store") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+            body: JSON.stringify(body)
+        });
+        if (!response.ok) throw new Error('Не удалось создать задачу');
+
+        closeModal();
+        document.getElementById('task-title').value = '';
+        document.getElementById('task-comment').value = '';
+        window.taskCreatePending = false;
+        submitButton.disabled = false;
+        submitButton.textContent = 'Создать задачу';
+        if (response.headers.get('X-Tasksk-Queued') !== '1') window.location.reload();
+    } catch (error) {
+        alert(error.message);
+        window.taskCreatePending = false;
+        submitButton.disabled = false;
+        submitButton.textContent = 'Создать задачу';
+    }
 }
 document.addEventListener('keydown', e => {
     if (e.key === 'Escape') closeModal();
