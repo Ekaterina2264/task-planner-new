@@ -67,22 +67,14 @@ Route::middleware(['auth'])->group(function () {
             'tomorrow' => $allTasks->filter(fn($t) => $t->timing === 'date' && $t->due_date && $t->due_date->startOfDay()->eq($tomorrow)),
             'later' => $allTasks->filter(fn($t) => $t->timing === 'later' || ($t->timing === 'date' && $t->due_date && $t->due_date->startOfDay()->gt($tomorrow))),
         ];
-        $visibleSectionTasks = fn ($sectionTasks) => $sectionTasks->filter(
-            fn ($task) => $task->status !== 'done' || $task->updated_at->isToday()
-        );
-        $overdue = $visibleSectionTasks($allBySection['overdue']);
-        $todayT = $visibleSectionTasks($allBySection['today']);
-        $tomorrowT = $visibleSectionTasks($allBySection['tomorrow']);
-        $laterT = $visibleSectionTasks($allBySection['later']);
-        $sectionProgress = collect($allBySection)->map(function ($sectionTasks) {
-            $visibleTasks = $sectionTasks->filter(fn($task) => $task->status !== 'done'
-                || $task->updated_at->isToday());
-
-            return [
-                'done' => $visibleTasks->where('status', 'done')->count(),
-                'total' => $visibleTasks->count(),
-            ];
-        });
+        $overdue = $allBySection['overdue'];
+        $todayT = $allBySection['today'];
+        $tomorrowT = $allBySection['tomorrow'];
+        $laterT = $allBySection['later'];
+        $sectionProgress = collect($allBySection)->map(fn ($sectionTasks) => [
+            'done' => $sectionTasks->where('status', 'done')->count(),
+            'total' => $sectionTasks->count(),
+        ]);
 
         $tasksView = $user->isDirector() ? 'director.tasks' : 'employee.dashboard';
         $employees = User::orderBy('name')->get();
