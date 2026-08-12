@@ -378,13 +378,10 @@ function groupTasks(tasks, includeDone = false) {
     const today = localDate();
     const tomorrow = localDate(1);
 
-    const completedSince = new Date();
-    completedSince.setDate(completedSince.getDate() - 1);
-    completedSince.setHours(0, 0, 0, 0);
-
     tasks.filter(task => {
         if (task.status !== 'done') return true;
-        return includeDone && task.updated_at && new Date(task.updated_at) >= completedSince;
+        if (!includeDone || !task.updated_at) return false;
+        return new Date(task.updated_at).toDateString() === new Date().toDateString();
     }).forEach(task => {
         const dueDate = taskDate(task);
 
