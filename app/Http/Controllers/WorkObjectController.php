@@ -166,6 +166,10 @@ class WorkObjectController extends Controller
             'is_completed' => ['sometimes', 'boolean'],
             'title' => ['sometimes', 'required', 'string', 'max:255'],
             'comment' => ['nullable', 'string'],
+            'priority' => ['sometimes', 'in:low,medium,high'],
+            'timing' => ['sometimes', 'in:today,later,date'],
+            'due_date' => ['nullable', 'date', 'required_if:timing,date'],
+            'assigned_to' => ['sometimes', 'nullable', 'exists:users,id'],
         ]);
 
         abort_if($validated === [], 422, 'Нет данных для изменения.');
@@ -181,10 +185,27 @@ class WorkObjectController extends Controller
         if (array_key_exists('comment', $validated)) {
             $updates['comment'] = $validated['comment'];
         }
+        if (array_key_exists('assigned_to', $validated)) {
+            $updates['assigned_to'] = $validated['assigned_to'];
+        }
 
-        $objectItem->update($updates);
+        DB::transaction(function () use ($objectItem, $updates, $validated) {
+            $objectItem->update($updates);
+            $this->syncLinkedTask($objectItem);
 
-        $this->syncLinkedTask($objectItem);
+            $taskUpdates = array_intersect_key($validated, array_flip(['priority', 'timing', 'due_date']));
+            if (array_key_exists('timing', $taskUpdates)) {
+                $taskUpdates['due_date'] = match ($taskUpdates['timing']) {
+                    'today' => today()->toDateString(),
+                    'later' => null,
+                    default => $validated['due_date'] ?? null,
+                };
+            }
+
+            if ($taskUpdates && $objectItem->fresh()->linkedTask) {
+                $objectItem->fresh()->linkedTask->update($taskUpdates);
+            }
+        });
 
         if (array_key_exists('is_completed', $validated)) {
             ActivityLog::record(
