@@ -210,6 +210,11 @@
             outline: none; transition: border-color 0.15s;
         }
         .form-input:focus { border-color: var(--accent); background: #fff; }
+        .form-input::selection {
+            background: #dff3ff;
+            color: #1a1a2e;
+            -webkit-text-fill-color: #1a1a2e;
+        }
         .assignee-select { position: relative; }
         .assignee-select select {
             width: 100%; min-height: 44px; padding: 10px 42px;
