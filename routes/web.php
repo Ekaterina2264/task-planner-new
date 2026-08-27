@@ -26,7 +26,7 @@ Route::middleware(['auth'])->group(function () {
         }
 
         if (request('view') === 'objects') {
-            $objects = WorkObject::with(['items.assignee', 'deletedItems', 'sections'])->orderBy('name')->get();
+            $objects = WorkObject::with(['items.assignee', 'items.linkedTask', 'deletedItems', 'sections'])->orderBy('name')->get();
             $deletedItems = ObjectItem::onlyTrashed()
                 ->with(['workObject.sections'])
                 ->orderByDesc('deleted_at')
