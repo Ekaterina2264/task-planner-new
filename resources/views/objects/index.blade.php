@@ -288,6 +288,7 @@
 }
 .object-item-completed { order: 2; }
 .object-item-content { flex: 1; min-width: 0; }
+.object-item-content { cursor: pointer; }
 .object-item-comment {
     color: #aaa;
     font-size: 12px;
@@ -589,7 +590,10 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                                         </svg>
                                     </button>
-                                    <div class="object-item-content">
+                                    <div class="object-item-content"
+                                        data-title="{{ $item->title }}"
+                                        data-comment="{{ $item->comment }}"
+                                        onclick="openObjectItemEdit(event, {{ $item->id }}, this.dataset.title, this.dataset.comment)">
                                         <span class="task-title {{ $item->is_completed ? 'done' : '' }}">{{ $item->title }}</span>
                                         @if($item->comment)
                                             <div class="object-item-comment">{{ $item->comment }}</div>
@@ -755,6 +759,22 @@
     </div>
 </div>
 
+<div id="item-edit-modal" class="modal-backdrop" style="display:none" onclick="closeObjectItemEdit(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-title">Редактировать задачу</div>
+        <div class="form-group">
+            <label class="form-label">Название</label>
+            <input type="text" id="item-edit-title" class="form-input" placeholder="Название задачи">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Комментарий</label>
+            <textarea id="item-edit-comment" class="form-input" rows="3" placeholder="Комментарий к задаче..."></textarea>
+        </div>
+        <button type="button" class="btn-submit" onclick="saveObjectItemEdit()">Сохранить</button>
+        <button type="button" class="btn-cancel" onclick="closeObjectItemEdit()">Отмена</button>
+    </div>
+</div>
+
 
 
 <script>
@@ -763,6 +783,7 @@ let currentSection = null;
 let editingObjectId = null;
 let editingSectionId = null;
 let editingItemId = null;
+let editingObjectItemId = null;
 
 function openObjectModal() {
     document.getElementById('object-modal').style.display = 'flex';
@@ -868,6 +889,43 @@ function closeAssigneeModal(event) {
         document.getElementById('assignee-modal').style.display = 'none';
         editingItemId = null;
     }
+}
+
+function openObjectItemEdit(event, itemId, title, comment) {
+    event.stopPropagation();
+    editingObjectItemId = itemId;
+    const titleInput = document.getElementById('item-edit-title');
+    titleInput.value = title;
+    document.getElementById('item-edit-comment').value = comment || '';
+    document.getElementById('item-edit-modal').style.display = 'flex';
+    titleInput.focus();
+    titleInput.select();
+}
+
+function closeObjectItemEdit(event) {
+    if (!event || event.target === document.getElementById('item-edit-modal')) {
+        document.getElementById('item-edit-modal').style.display = 'none';
+        editingObjectItemId = null;
+    }
+}
+
+async function saveObjectItemEdit() {
+    if (!editingObjectItemId) return;
+
+    const title = document.getElementById('item-edit-title').value.trim();
+    if (!title) return document.getElementById('item-edit-title').focus();
+
+    const response = await fetch(`/object-items/${editingObjectItemId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+        body: JSON.stringify({
+            title,
+            comment: document.getElementById('item-edit-comment').value.trim(),
+        }),
+    });
+
+    if (response.ok) window.location.reload();
+    else alert('Не удалось сохранить задачу. Попробуйте ещё раз.');
 }
 
 async function createObject() {
@@ -1122,6 +1180,7 @@ document.addEventListener('keydown', event => {
         closeSectionModal();
         closeItemModal();
         closeAssigneeModal();
+        closeObjectItemEdit();
     }
 });
 </script>
