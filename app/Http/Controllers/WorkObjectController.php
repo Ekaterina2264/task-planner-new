@@ -163,21 +163,42 @@ class WorkObjectController extends Controller
     public function updateItem(Request $request, ObjectItem $objectItem)
     {
         $validated = $request->validate([
-            'is_completed' => ['required', 'boolean'],
+            'is_completed' => ['sometimes', 'boolean'],
+            'title' => ['sometimes', 'required', 'string', 'max:255'],
+            'comment' => ['nullable', 'string'],
         ]);
 
-        $objectItem->update([
-            'is_completed' => $validated['is_completed'],
-            'completed_at' => $validated['is_completed'] ? now() : null,
-        ]);
+        abort_if($validated === [], 422, 'Нет данных для изменения.');
+
+        $updates = [];
+        if (array_key_exists('is_completed', $validated)) {
+            $updates['is_completed'] = $validated['is_completed'];
+            $updates['completed_at'] = $validated['is_completed'] ? now() : null;
+        }
+        if (array_key_exists('title', $validated)) {
+            $updates['title'] = $validated['title'];
+        }
+        if (array_key_exists('comment', $validated)) {
+            $updates['comment'] = $validated['comment'];
+        }
+
+        $objectItem->update($updates);
 
         $this->syncLinkedTask($objectItem);
 
-        ActivityLog::record(
-            $validated['is_completed'] ? 'object-item.completed' : 'object-item.reopened',
-            ($validated['is_completed'] ? 'Выполнен пункт ' : 'Возвращён пункт ') . "«{$objectItem->title}»",
-            "Объект: {$objectItem->workObject->name}"
-        );
+        if (array_key_exists('is_completed', $validated)) {
+            ActivityLog::record(
+                $validated['is_completed'] ? 'object-item.completed' : 'object-item.reopened',
+                ($validated['is_completed'] ? 'Выполнен пункт ' : 'Возвращён пункт ') . "«{$objectItem->title}»",
+                "Объект: {$objectItem->workObject->name}"
+            );
+        } else {
+            ActivityLog::record(
+                'object-item.updated',
+                "Изменён пункт «{$objectItem->title}»",
+                "Объект: {$objectItem->workObject->name}"
+            );
+        }
 
         return response()->json($objectItem->fresh());
     }
