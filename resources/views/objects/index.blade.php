@@ -593,7 +593,11 @@
                                     <div class="object-item-content"
                                         data-title="{{ $item->title }}"
                                         data-comment="{{ $item->comment }}"
-                                        onclick="openObjectItemEdit(event, {{ $item->id }}, this.dataset.title, this.dataset.comment)">
+                                        data-priority="{{ $item->linkedTask?->priority ?? 'medium' }}"
+                                        data-timing="{{ $item->linkedTask?->timing ?? 'later' }}"
+                                        data-date="{{ $item->linkedTask?->due_date?->format('Y-m-d') }}"
+                                        data-assigned-to="{{ $item->assigned_to }}"
+                                        onclick="openObjectItemEdit(event, {{ $item->id }}, this.dataset)">
                                         <span class="task-title {{ $item->is_completed ? 'done' : '' }}">{{ $item->title }}</span>
                                         @if($item->comment)
                                             <div class="object-item-comment">{{ $item->comment }}</div>
@@ -770,6 +774,40 @@
             <label class="form-label">Комментарий</label>
             <textarea id="item-edit-comment" class="form-input" rows="3" placeholder="Комментарий к задаче..."></textarea>
         </div>
+        <div class="form-group">
+            <label class="form-label">Приоритет</label>
+            <div class="priority-pills">
+                <div class="priority-pill" data-val="high" onclick="setObjectItemEditPriority('high')">🔴 Высокий</div>
+                <div class="priority-pill" data-val="medium" onclick="setObjectItemEditPriority('medium')">🟡 Средний</div>
+                <div class="priority-pill" data-val="low" onclick="setObjectItemEditPriority('low')">🟢 Низкий</div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Срок</label>
+            <div class="timing-pills">
+                <div class="timing-pill" data-val="today" onclick="setObjectItemEditTiming('today')">Сегодня</div>
+                <div class="timing-pill" data-val="later" onclick="setObjectItemEditTiming('later')">Отложить</div>
+                <div class="timing-pill" data-val="date" onclick="setObjectItemEditTiming('date')">Конкретная дата</div>
+            </div>
+            <div id="item-edit-date-field" style="display:none;margin-top:10px">
+                <input type="date" id="item-edit-date" class="form-input">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Ответственный</label>
+            <div class="object-select-field">
+                <select id="item-edit-assigned-to" class="form-input object-select">
+                    <option value="">Не назначен</option>
+                    @foreach($employees as $employee)
+                        <option value="{{ $employee->id }}">{{ $employee->name }}</option>
+                    @endforeach
+                </select>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="m8 10 4 4 4-4"/>
+                </svg>
+            </div>
+        </div>
         <button type="button" class="btn-submit" onclick="saveObjectItemEdit()">Сохранить</button>
         <button type="button" class="btn-cancel" onclick="closeObjectItemEdit()">Отмена</button>
     </div>
@@ -784,6 +822,8 @@ let editingObjectId = null;
 let editingSectionId = null;
 let editingItemId = null;
 let editingObjectItemId = null;
+let editingObjectItemPriority = 'medium';
+let editingObjectItemTiming = 'later';
 
 function openObjectModal() {
     document.getElementById('object-modal').style.display = 'flex';
@@ -891,15 +931,35 @@ function closeAssigneeModal(event) {
     }
 }
 
-function openObjectItemEdit(event, itemId, title, comment) {
+function openObjectItemEdit(event, itemId, data) {
     event.stopPropagation();
     editingObjectItemId = itemId;
     const titleInput = document.getElementById('item-edit-title');
-    titleInput.value = title;
-    document.getElementById('item-edit-comment').value = comment || '';
+    titleInput.value = data.title;
+    document.getElementById('item-edit-comment').value = data.comment || '';
+    document.getElementById('item-edit-date').value = data.date || '';
+    document.getElementById('item-edit-assigned-to').value = data.assignedTo || '';
+    setObjectItemEditPriority(data.priority || 'medium');
+    setObjectItemEditTiming(data.timing || 'later');
     document.getElementById('item-edit-modal').style.display = 'flex';
     titleInput.focus();
     titleInput.select();
+}
+
+function setObjectItemEditPriority(value) {
+    editingObjectItemPriority = value;
+    document.querySelectorAll('#item-edit-modal .priority-pill').forEach(pill => {
+        pill.className = 'priority-pill';
+        if (pill.dataset.val === value) pill.classList.add(`active-${value}`);
+    });
+}
+
+function setObjectItemEditTiming(value) {
+    editingObjectItemTiming = value;
+    document.querySelectorAll('#item-edit-modal .timing-pill').forEach(pill => {
+        pill.classList.toggle('active', pill.dataset.val === value);
+    });
+    document.getElementById('item-edit-date-field').style.display = value === 'date' ? 'block' : 'none';
 }
 
 function closeObjectItemEdit(event) {
@@ -915,12 +975,23 @@ async function saveObjectItemEdit() {
     const title = document.getElementById('item-edit-title').value.trim();
     if (!title) return document.getElementById('item-edit-title').focus();
 
+    const dueDate = editingObjectItemTiming === 'date'
+        ? document.getElementById('item-edit-date').value
+        : null;
+    if (editingObjectItemTiming === 'date' && !dueDate) {
+        return document.getElementById('item-edit-date').focus();
+    }
+
     const response = await fetch(`/object-items/${editingObjectItemId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
         body: JSON.stringify({
             title,
             comment: document.getElementById('item-edit-comment').value.trim(),
+            priority: editingObjectItemPriority,
+            timing: editingObjectItemTiming,
+            due_date: dueDate,
+            assigned_to: document.getElementById('item-edit-assigned-to').value || null,
         }),
     });
 
