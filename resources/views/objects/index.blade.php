@@ -45,6 +45,12 @@
     transform: translateY(-2px);
     box-shadow: inset 0 0 0 3px #fff, 0 7px 16px rgba(45, 165, 244, .24);
 }
+.object-shortcut-link.is-active {
+    color: #258ee8;
+}
+.object-shortcut-link.is-active .object-shortcut-circle {
+    box-shadow: inset 0 0 0 3px #fff, 0 0 0 3px rgba(45, 165, 244, .18);
+}
 .object-shortcut-name {
     display: -webkit-box;
     max-width: 86px;
@@ -1013,17 +1019,26 @@ function openObjectShortcut(event, objectId) {
     if (!target) return;
 
     document.querySelectorAll('.object-board').forEach(board => {
-        const boardId = Number(board.dataset.objectId);
-        const sections = document.getElementById(`object-sections-${boardId}`);
-        const button = board.querySelector('.object-collapse');
-        if (!sections || !button) return;
-
-        const collapsed = board !== target;
-        sections.hidden = collapsed;
-        button.classList.toggle('is-collapsed', collapsed);
-        button.title = collapsed ? 'Развернуть объект' : 'Свернуть объект';
-        button.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        board.hidden = board !== target;
     });
+
+    const sections = document.getElementById(`object-sections-${objectId}`);
+    const button = target.querySelector('.object-collapse');
+    if (sections && button) {
+        sections.hidden = false;
+        button.classList.remove('is-collapsed');
+        button.title = 'Свернуть объект';
+        button.setAttribute('aria-expanded', 'true');
+    }
+
+    document.querySelectorAll('.object-shortcut-link').forEach(link => {
+        const active = link.getAttribute('href') === `#object-${objectId}`;
+        link.classList.toggle('is-active', active);
+        link.setAttribute('aria-current', active ? 'true' : 'false');
+    });
+
+    const navigation = document.querySelector('.objects-nav');
+    if (navigation) navigation.hidden = true;
 
     history.pushState(null, '', `#object-${objectId}`);
     requestAnimationFrame(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }));
@@ -1091,32 +1106,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const target = window.location.hash ? document.querySelector(window.location.hash) : null;
     if (target?.classList.contains('object-board')) {
-        document.querySelectorAll('.object-board').forEach(board => {
-            if (board === target) return;
-
-            const otherObjectId = Number(board.dataset.objectId);
-            const otherSections = document.getElementById(`object-sections-${otherObjectId}`);
-            const otherButton = board.querySelector('.object-collapse');
-            if (!otherSections || !otherButton) return;
-
-            otherSections.hidden = true;
-            otherButton.classList.add('is-collapsed');
-            otherButton.title = 'Развернуть объект';
-            otherButton.setAttribute('aria-expanded', 'false');
-        });
-
         const objectId = Number(target.dataset.objectId);
-        const sections = document.getElementById(`object-sections-${objectId}`);
-        const button = target.querySelector('.object-collapse');
-
-        if (sections && button) {
-            sections.hidden = false;
-            button.classList.remove('is-collapsed');
-            button.title = 'Свернуть объект';
-            button.setAttribute('aria-expanded', 'true');
-        }
-
-        requestAnimationFrame(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+        openObjectShortcut(new Event('click'), objectId);
     }
 });
 
